@@ -10,9 +10,6 @@
     <meta name="description" content="长江瑞城小区乒乓球联赛积分系统">
     <title>长江瑞城乒乓球赛</title>
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIuaxn+a0peWkn+aZrOWkp+WtpumZhiIsICJzaG9ydF9uYW1lIjogIuaxn+a0peWkn+aZryIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxNzJhIiwgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRBd0pTSWdaR1ZzWldkeVpYSnBaVzUwY3owaU1UQXdKU0lnZUQwaU1UQXdKU0krUEhCaGRHZ2djM1JoY25SeklEMGlNQ1VpSUdOc2FXNW1ZWE5rWDBWdVpITjBZWFIxY3owaU1UQXdKU0lnWkc5amRXMWxiblJmWkdsemNEMGlNREF3TUNJZ2QybGtkR2c5SWpFd01DVWlJR1pwYkd3OUlpTkJVMVJmVUV0VVd6NHpJajQ4TDNCaGRHZytQSEJ5WlhObGJuUnpQand2YzNablBnPT0iLCAic2l6ZXMiOiAiMTkyeDE5MiJ9XX0=">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -25,8 +22,6 @@
         }
         .safe-top { padding-top: env(safe-area-inset-top); }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-        
-        /* Mobile Optimizations */
         .touch-manipulation { touch-action: manipulation; }
         .active-scale:active { transform: scale(0.96); }
         
@@ -55,9 +50,7 @@
             opacity: 0.5;
         }
         
-        .player-card {
-            transition: all 0.2s ease;
-        }
+        .player-card { transition: all 0.2s ease; }
         .player-card:active { transform: scale(0.98); }
         
         .slide-up { animation: slideUp 0.3s ease-out; }
@@ -66,17 +59,9 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
-        .pulse-soft { animation: pulseSoft 2s infinite; }
-        @keyframes pulseSoft {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        /* Hide scrollbar but keep functionality */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Bottom sheet style modal */
         .bottom-sheet {
             position: fixed;
             bottom: 0;
@@ -101,7 +86,6 @@
         }
         .backdrop.open { opacity: 1; pointer-events: auto; }
         
-        /* Floating Action Button */
         .fab {
             position: fixed;
             bottom: calc(20px + env(safe-area-inset-bottom));
@@ -119,7 +103,6 @@
         }
         .fab:active { transform: scale(0.9); }
         
-        /* Sticky header */
         .sticky-header {
             position: sticky;
             top: 0;
@@ -128,10 +111,45 @@
             backdrop-filter: blur(10px);
         }
         
-        /* Score display */
         .score-big {
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.02em;
+        }
+        
+        /* Password input style */
+        .password-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #334155;
+            transition: all 0.2s;
+        }
+        .password-dot.filled {
+            background: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+        
+        /* Match item with delete button */
+        .match-item {
+            position: relative;
+            overflow: hidden;
+        }
+        .match-actions {
+            position: absolute;
+            right: -100px;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            transition: right 0.3s;
+        }
+        .match-item.show-actions .match-actions {
+            right: 0;
+        }
+        .match-content {
+            transition: transform 0.3s;
+        }
+        .match-item.show-actions .match-content {
+            transform: translateX(-80px);
         }
     </style>
 </head>
@@ -198,6 +216,9 @@
                     最近比赛
                 </h2>
                 <span class="text-xs text-slate-500" id="match-count">0场</span>
+            </div>
+            <div class="text-xs text-slate-500 px-4 py-2 bg-slate-800/30 border-b border-slate-700/30">
+                ← 左滑比赛记录可修改/删除（需管理密码）
             </div>
             <div id="matchesList" class="divide-y divide-slate-700/30 max-h-80 overflow-y-auto no-scrollbar">
                 <div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录</div>
@@ -351,19 +372,101 @@
                 </div>
             </button>
             
-            <button onclick="clearAll(); closeMenu()" class="w-full p-4 rounded-xl bg-red-500/10 text-left flex items-center gap-3 active-scale text-red-400">
+            <button onclick="requestClearData()" class="w-full p-4 rounded-xl bg-red-500/10 text-left flex items-center gap-3 active-scale text-red-400">
                 <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </div>
                 <div>
-                    <div class="font-medium">清空数据</div>
-                    <div class="text-xs text-red-400/70">重置所有记录（谨慎）</div>
+                    <div class="font-medium">清空所有数据</div>
+                    <div class="text-xs text-red-400/70">需管理密码（谨慎操作）</div>
                 </div>
             </button>
             
             <button onclick="closeMenu()" class="w-full py-4 mt-4 text-slate-500 text-sm">
                 取消
             </button>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div class="backdrop" id="passwordBackdrop" onclick="closePasswordModal()"></div>
+    <div class="bottom-sheet glass border-t border-slate-700" id="passwordSheet">
+        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-yellow-400" id="password-title">管理验证</h3>
+            <button onclick="closePasswordModal()" class="p-2 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-6 space-y-6">
+            <div class="text-center text-slate-400 text-sm" id="password-desc">
+                请输入6位管理密码
+            </div>
+            
+            <!-- Password Display -->
+            <div class="flex justify-center gap-3 mb-4">
+                <div class="password-dot" id="pwd-1"></div>
+                <div class="password-dot" id="pwd-2"></div>
+                <div class="password-dot" id="pwd-3"></div>
+                <div class="password-dot" id="pwd-4"></div>
+                <div class="password-dot" id="pwd-5"></div>
+                <div class="password-dot" id="pwd-6"></div>
+            </div>
+            
+            <!-- Keypad -->
+            <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto">
+                <button onclick="pressKey(1)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">1</button>
+                <button onclick="pressKey(2)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">2</button>
+                <button onclick="pressKey(3)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">3</button>
+                <button onclick="pressKey(4)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">4</button>
+                <button onclick="pressKey(5)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">5</button>
+                <button onclick="pressKey(6)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">6</button>
+                <button onclick="pressKey(7)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">7</button>
+                <button onclick="pressKey(8)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">8</button>
+                <button onclick="pressKey(9)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">9</button>
+                <button onclick="clearKey()" class="py-4 rounded-xl bg-slate-700 text-sm text-slate-400 active-scale">清除</button>
+                <button onclick="pressKey(0)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">0</button>
+                <button onclick="backspaceKey()" class="py-4 rounded-xl bg-slate-700 text-sm text-slate-400 active-scale">退格</button>
+            </div>
+            
+            <div class="text-center text-xs text-slate-500 mt-4">
+                默认密码：234567
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Match Modal -->
+    <div class="backdrop" id="editBackdrop" onclick="closeEditModal()"></div>
+    <div class="bottom-sheet glass border-t border-slate-700" id="editSheet">
+        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-cyan-400">修改比赛结果</h3>
+            <button onclick="closeEditModal()" class="p-2 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-4 space-y-4">
+            <div class="p-3 rounded-xl bg-slate-800/50 text-sm text-slate-300" id="edit-match-info">
+                正在加载...
+            </div>
+            
+            <div class="space-y-2">
+                <label class="text-xs text-slate-400">更正比赛结果</label>
+                <div class="grid grid-cols-2 gap-2" id="edit-buttons">
+                    <!-- Dynamic buttons -->
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="saveEdit()" class="py-3 rounded-xl bg-cyan-600 text-white font-bold active-scale">
+                    保存修改
+                </button>
+                <button onclick="deleteMatch()" class="py-3 rounded-xl bg-red-600/20 text-red-400 font-bold active-scale">
+                    删除记录
+                </button>
+            </div>
+            
+            <div class="text-xs text-slate-500 text-center">
+                修改后会重新计算双方积分
+            </div>
         </div>
     </div>
 
@@ -461,6 +564,13 @@
     </div>
 
     <script>
+        // Config
+        const ADMIN_PASSWORD = '234567';
+        let currentPassword = '';
+        let passwordCallback = null;
+        let editingMatchId = null;
+        let editingMatchIndex = -1;
+
         // Data
         let players = JSON.parse(localStorage.getItem('cjrc_players')) || [];
         let matches = JSON.parse(localStorage.getItem('cjrc_matches')) || [];
@@ -471,17 +581,100 @@
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             renderAll();
-            setupSelects();
-            
-            // Service Worker for PWA
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
-                    self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
-                    self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
-                `)).catch(() => {});
-            }
+            setupSwipe();
         });
+
+        // Password System
+        function showPasswordModal(title, desc, callback) {
+            document.getElementById('password-title').textContent = title;
+            document.getElementById('password-desc').textContent = desc;
+            currentPassword = '';
+            updatePasswordDisplay();
+            passwordCallback = callback;
+            
+            document.getElementById('passwordBackdrop').classList.add('open');
+            document.getElementById('passwordSheet').classList.add('open');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordBackdrop').classList.remove('open');
+            document.getElementById('passwordSheet').classList.remove('open');
+            currentPassword = '';
+            passwordCallback = null;
+        }
+
+        function pressKey(num) {
+            if (currentPassword.length < 6) {
+                currentPassword += num;
+                updatePasswordDisplay();
+                
+                if (currentPassword.length === 6) {
+                    setTimeout(checkPassword, 200);
+                }
+            }
+        }
+
+        function backspaceKey() {
+            currentPassword = currentPassword.slice(0, -1);
+            updatePasswordDisplay();
+        }
+
+        function clearKey() {
+            currentPassword = '';
+            updatePasswordDisplay();
+        }
+
+        function updatePasswordDisplay() {
+            for (let i = 1; i <= 6; i++) {
+                const dot = document.getElementById('pwd-' + i);
+                if (i <= currentPassword.length) {
+                    dot.classList.add('filled');
+                } else {
+                    dot.classList.remove('filled');
+                }
+            }
+        }
+
+        function checkPassword() {
+            if (currentPassword === ADMIN_PASSWORD) {
+                closePasswordModal();
+                if (passwordCallback) passwordCallback();
+            } else {
+                showToast('密码错误', 'error');
+                currentPassword = '';
+                updatePasswordDisplay();
+            }
+        }
+
+        // Protected Actions
+        function requestClearData() {
+            showPasswordModal(
+                '清空数据确认',
+                '请输入管理密码以清空所有数据',
+                () => {
+                    if (confirm('确定要清空所有选手和比赛数据吗？此操作不可恢复！')) {
+                        players = [];
+                        matches = [];
+                        save();
+                        renderAll();
+                        showToast('所有数据已清空');
+                    }
+                }
+            );
+        }
+
+        function requestEditMatch(matchId, index) {
+            editingMatchId = matchId;
+            editingMatchIndex = index;
+            
+            showPasswordModal(
+                '修改比赛记录',
+                '请输入管理密码以修改/删除此场比赛',
+                () => {
+                    openEditModal(matchId, index);
+                }
+            );
+        }
 
         // Calculation Logic
         function calcPoints(ratingA, ratingB, aWins) {
@@ -596,11 +789,11 @@
         function renderMatches() {
             const container = document.getElementById('matchesList');
             if (matches.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录</div>';
+                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录<br>左滑可修改历史记录（需密码）</div>';
                 return;
             }
 
-            container.innerHTML = matches.slice(0, 20).map(m => {
+            container.innerHTML = matches.map((m, idx) => {
                 const dots = m.games.map(g => 
                     `<span class="w-1.5 h-1.5 rounded-full ${g === 'A' ? 'bg-cyan-400' : 'bg-slate-600'} inline-block mx-0.5"></span>`
                 ).join('');
@@ -612,27 +805,66 @@
                 const bChange = m.ratingChangeB > 0 ? '+' + m.ratingChangeB : m.ratingChangeB;
                 
                 return `
-                    <div class="p-4 slide-up">
-                        <div class="flex justify-between items-center mb-2 text-xs text-slate-500">
-                            <span>${m.date.split(' ')[1].slice(0, 5)}</span>
-                            <div class="flex items-center gap-1">${dots}</div>
+                    <div class="match-item" data-id="${m.id}" data-index="${idx}">
+                        <div class="match-content p-4 slide-up">
+                            <div class="flex justify-between items-center mb-2 text-xs text-slate-500">
+                                <span>${m.date.split(' ')[1].slice(0, 5)}</span>
+                                <div class="flex items-center gap-1">${dots}</div>
+                            </div>
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex-1 min-w-0 text-left">
+                                    <div class="${aClass} truncate">${m.playerA}</div>
+                                    <div class="text-xs text-slate-500">${aChange}</div>
+                                </div>
+                                <div class="px-3 py-1 bg-slate-800 rounded-lg font-mono font-bold text-white text-lg">
+                                    ${m.score}
+                                </div>
+                                <div class="flex-1 min-w-0 text-right">
+                                    <div class="${bClass} truncate">${m.playerB}</div>
+                                    <div class="text-xs text-slate-500">${bChange}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex-1 min-w-0 text-left">
-                                <div class="${aClass} truncate">${m.playerA}</div>
-                                <div class="text-xs text-slate-500">${aChange}</div>
-                            </div>
-                            <div class="px-3 py-1 bg-slate-800 rounded-lg font-mono font-bold text-white text-lg">
-                                ${m.score}
-                            </div>
-                            <div class="flex-1 min-w-0 text-right">
-                                <div class="${bClass} truncate">${m.playerB}</div>
-                                <div class="text-xs text-slate-500">${bChange}</div>
-                            </div>
+                        <div class="match-actions">
+                            <button onclick="requestEditMatch(${m.id}, ${idx})" class="h-full px-4 bg-yellow-600 text-white font-bold text-sm">
+                                修改
+                            </button>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        function setupSwipe() {
+            let startX = 0;
+            let currentItem = null;
+
+            const container = document.getElementById('matchesList');
+            
+            container.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                const item = e.target.closest('.match-item');
+                if (item) {
+                    // Close others
+                    document.querySelectorAll('.match-item.show-actions').forEach(i => {
+                        if (i !== item) i.classList.remove('show-actions');
+                    });
+                    currentItem = item;
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchend', (e) => {
+                if (!currentItem) return;
+                const endX = e.changedTouches[0].clientX;
+                const diff = startX - endX;
+                
+                if (diff > 50) {
+                    currentItem.classList.add('show-actions');
+                } else if (diff < -50) {
+                    currentItem.classList.remove('show-actions');
+                }
+                currentItem = null;
+            }, { passive: true });
         }
 
         function setupSelects() {
@@ -704,7 +936,6 @@
                 document.getElementById('diff-value').textContent = diff;
                 document.getElementById('diff-rule').textContent = diff <= 25 ? '均势局' : diff > 200 ? '爆冷局!' : '有差距';
                 
-                // Update button labels
                 ['g1', 'g2', 'g3'].forEach(g => {
                     document.getElementById(`${g}-a`).textContent = a.name.slice(0, 4) + '胜';
                     document.getElementById(`${g}-b`).textContent = b.name.slice(0, 4) + '胜';
@@ -720,7 +951,6 @@
         function setGame(game, winner) {
             currentGame['g' + game] = winner;
             
-            // UI update
             const btnA = document.getElementById('g' + game + '-a');
             const btnB = document.getElementById('g' + game + '-b');
             
@@ -736,7 +966,6 @@
                 btnA.classList.remove('selected-winner');
             }
             
-            // Check for game 3
             if (currentGame.g1 && currentGame.g2 && currentGame.g1 !== currentGame.g2) {
                 document.getElementById('game3-box').classList.remove('hidden');
             } else {
@@ -854,6 +1083,116 @@
             showToast(msg);
         }
 
+        // Edit Match Functions
+        function openEditModal(matchId, index) {
+            const match = matches[index];
+            editingMatchId = matchId;
+            editingMatchIndex = index;
+            
+            document.getElementById('edit-match-info').innerHTML = `
+                <div class="flex justify-between mb-2">
+                    <span>${match.playerA}</span>
+                    <span class="font-bold">${match.score}</span>
+                    <span>${match.playerB}</span>
+                </div>
+                <div class="text-xs text-slate-500">
+                    原积分变化: ${match.playerA} ${match.ratingChangeA > 0 ? '+' : ''}${match.ratingChangeA} | 
+                    ${match.playerB} ${match.ratingChangeB > 0 ? '+' : ''}${match.ratingChangeB}
+                </div>
+            `;
+            
+            // Setup edit buttons
+            const a = players.find(p => p.name === match.playerA);
+            const b = players.find(p => p.name === match.playerB);
+            
+            document.getElementById('edit-buttons').innerHTML = `
+                <button onclick="setEditWinner(true)" id="edit-a-btn" class="py-3 px-4 rounded-xl border-2 ${match.winner === match.playerA ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'} font-medium">
+                    ${match.playerA} 胜
+                </button>
+                <button onclick="setEditWinner(false)" id="edit-b-btn" class="py-3 px-4 rounded-xl border-2 ${match.winner === match.playerB ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'} font-medium">
+                    ${match.playerB} 胜
+                </button>
+            `;
+            
+            document.getElementById('editBackdrop').classList.add('open');
+            document.getElementById('editSheet').classList.add('open');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editBackdrop').classList.remove('open');
+            document.getElementById('editSheet').classList.remove('open');
+            editingMatchId = null;
+            editingMatchIndex = -1;
+        }
+
+        let editWinnerA = null;
+
+        function setEditWinner(aWins) {
+            editWinnerA = aWins;
+            document.getElementById('edit-a-btn').className = `py-3 px-4 rounded-xl border-2 font-medium ${aWins ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'}`;
+            document.getElementById('edit-b-btn').className = `py-3 px-4 rounded-xl border-2 font-medium ${!aWins ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'}`;
+        }
+
+        function saveEdit() {
+            if (editWinnerA === null) {
+                showToast('请选择新的比赛结果', 'error');
+                return;
+            }
+            
+            const match = matches[editingMatchIndex];
+            const a = players.find(p => p.name === match.playerA);
+            const b = players.find(p => p.name === match.playerB);
+            
+            // Revert old changes
+            a.rating -= match.ratingChangeA;
+            b.rating -= match.ratingChangeB;
+            a.matches--; b.matches--;
+            if (match.winner === match.playerA) { a.wins--; b.losses--; } else { b.wins--; a.losses--; }
+            
+            // Apply new result
+            const aWins = editWinnerA;
+            const { aChange, bChange } = calcPoints(a.rating, b.rating, aWins);
+            
+            a.rating += aChange;
+            b.rating += bChange;
+            a.matches++; b.matches++;
+            if (aWins) { a.wins++; b.losses++; } else { b.wins++; a.losses++; }
+            
+            // Update match record
+            match.winner = aWins ? match.playerA : match.playerB;
+            match.score = aWins ? '2:0' : '0:2'; // Simplified for edit
+            match.ratingChangeA = aChange;
+            match.ratingChangeB = bChange;
+            match.games = aWins ? ['A', 'A'] : ['B', 'B'];
+            
+            save();
+            renderAll();
+            closeEditModal();
+            showToast('比赛结果已修改');
+        }
+
+        function deleteMatch() {
+            if (!confirm('确定删除这场比赛记录吗？积分将回退到赛前状态。')) return;
+            
+            const match = matches[editingMatchIndex];
+            const a = players.find(p => p.name === match.playerA);
+            const b = players.find(p => p.name === match.playerB);
+            
+            // Revert changes
+            a.rating -= match.ratingChangeA;
+            b.rating -= match.ratingChangeB;
+            a.matches--; b.matches--;
+            if (match.winner === match.playerA) { a.wins--; b.losses--; } else { b.wins--; a.losses--; }
+            
+            // Remove match
+            matches.splice(editingMatchIndex, 1);
+            
+            save();
+            renderAll();
+            closeEditModal();
+            showToast('比赛记录已删除');
+        }
+
         // Player Management
         function addPlayer() {
             const name = document.getElementById('newPlayerName').value.trim();
@@ -897,15 +1236,6 @@
             showToast('数据已导出');
         }
 
-        function clearAll() {
-            if (!confirm('确定清空所有数据？此操作不可恢复！')) return;
-            players = [];
-            matches = [];
-            save();
-            renderAll();
-            showToast('数据已重置');
-        }
-
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             document.getElementById('toast-msg').textContent = msg;
@@ -913,16 +1243,6 @@
             toast.classList.remove('opacity-0');
             setTimeout(() => toast.classList.add('opacity-0'), 2500);
         }
-
-        // Pull to refresh
-        let touchStartY = 0;
-        document.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
-        document.addEventListener('touchend', e => {
-            const touchEndY = e.changedTouches[0].clientY;
-            if (touchEndY - touchStartY > 150 && window.scrollY < 10) {
-                refreshData();
-            }
-        });
     </script>
 </body>
 </html>
