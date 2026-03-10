@@ -635,10 +635,12 @@
             }
         }
 
+        // 修复：先保存回调再关闭弹窗
         function checkPassword() {
             if (currentPassword === ADMIN_PASSWORD) {
+                const cb = passwordCallback;
                 closePasswordModal();
-                if (passwordCallback) passwordCallback();
+                if (cb) cb();
             } else {
                 showToast('密码错误', 'error');
                 currentPassword = '';
@@ -1113,6 +1115,10 @@
                     ${match.playerB} 胜
                 </button>
             `;
+            
+            // 默认选中当前胜者
+            const aWins = match.winner === match.playerA;
+            setEditWinner(aWins);
             
             document.getElementById('editBackdrop').classList.add('open');
             document.getElementById('editSheet').classList.add('open');
