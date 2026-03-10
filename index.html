@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="长江瑞城乒乓球">
+    <meta name="description" content="长江瑞城小区乒乓球联赛积分系统">
+    <title>长江瑞城乒乓球赛</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIuaxn+a0peWkn+aZrOWkp+WtpumZhiIsICJzaG9ydF9uYW1lIjogIuaxn+a0peWkn+aZryIsICJzdGFydF91cmwiOiAiLiIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAiYmFja2dyb3VuZF9jb2xvciI6ICIjMGYxNzJhIiwgInRoZW1lX2NvbG9yIjogIiMwZjE3MmEiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRBd0pTSWdaR1ZzWldkeVpYSnBaVzUwY3owaU1UQXdKU0lnZUQwaU1UQXdKU0krUEhCaGRHZ2djM1JoY25SeklEMGlNQ1VpSUdOc2FXNW1ZWE5rWDBWdVpITjBZWFIxY3owaU1UQXdKU0lnWkc5amRXMWxiblJmWkdsemNEMGlNREF3TUNJZ2QybGtkR2c5SWpFd01DVWlJR1pwYkd3OUlpTkJVMVJmVUV0VVd6NHpJajQ4TDNCaGRHZytQSEJ5WlhObGJuUnpQand2YzNablBnPT0iLCAic2l6ZXMiOiAiMTkyeDE5MiJ9XX0=">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Noto Sans SC', sans-serif; 
+            background: #0f172a; 
+            overscroll-behavior: none;
+        }
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Mobile Optimizations */
+        .touch-manipulation { touch-action: manipulation; }
+        .active-scale:active { transform: scale(0.96); }
+        
+        .glass {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .game-btn {
+            transition: all 0.15s ease;
+            touch-action: manipulation;
+        }
+        .game-btn:active { transform: scale(0.95); }
+        .game-btn.selected-winner {
+            background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+            border-color: #22d3ee;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+            color: white;
+        }
+        .game-btn.selected-loser {
+            background: rgba(30, 41, 59, 0.5);
+            border-color: #334155;
+            color: #64748b;
+            opacity: 0.5;
+        }
+        
+        .player-card {
+            transition: all 0.2s ease;
+        }
+        .player-card:active { transform: scale(0.98); }
+        
+        .slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .pulse-soft { animation: pulseSoft 2s infinite; }
+        @keyframes pulseSoft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Hide scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Bottom sheet style modal */
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 90vh;
+            border-radius: 24px 24px 0 0;
+        }
+        .bottom-sheet.open { transform: translateY(0); }
+        
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 40;
+        }
+        .backdrop.open { opacity: 1; pointer-events: auto; }
+        
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+            box-shadow: 0 4px 20px rgba(34, 211, 238, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            transition: transform 0.2s;
+        }
+        .fab:active { transform: scale(0.9); }
+        
+        /* Sticky header */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Score display */
+        .score-big {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+    </style>
+</head>
+<body class="text-slate-200 safe-top safe-bottom">
+
+    <!-- Sticky Header -->
+    <header class="sticky-header px-4 py-3 border-b border-slate-800">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-lg font-bold text-cyan-400">长江瑞城乒乓球赛</h1>
+                <p class="text-xs text-slate-500">阶梯积分制 · 实时排名</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="showRules()" class="p-2 rounded-lg bg-slate-800 text-slate-400 active-scale">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+                <button onclick="showMenu()" class="p-2 rounded-lg bg-slate-800 text-slate-400 active-scale">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="px-4 py-4 pb-24 space-y-4">
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-3 gap-3">
+            <div class="glass rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-cyan-400 score-big" id="stat-players">0</div>
+                <div class="text-xs text-slate-500">参赛人数</div>
+            </div>
+            <div class="glass rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-yellow-400 score-big" id="stat-matches">0</div>
+                <div class="text-xs text-slate-500">今日比赛</div>
+            </div>
+            <div class="glass rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-purple-400 score-big" id="stat-avg">1500</div>
+                <div class="text-xs text-slate-500">平均积分</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+                <h2 class="font-bold text-yellow-400 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    实时排名
+                </h2>
+                <button onclick="refreshData()" class="text-xs text-cyan-400 active-scale p-2">
+                    刷新
+                </button>
+            </div>
+            <div id="leaderboard" class="divide-y divide-slate-700/30 max-h-96 overflow-y-auto no-scrollbar">
+                <div class="p-8 text-center text-slate-500 text-sm">暂无选手数据</div>
+            </div>
+        </div>
+
+        <!-- Recent Matches -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+                <h2 class="font-bold text-cyan-400 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    最近比赛
+                </h2>
+                <span class="text-xs text-slate-500" id="match-count">0场</span>
+            </div>
+            <div id="matchesList" class="divide-y divide-slate-700/30 max-h-80 overflow-y-auto no-scrollbar">
+                <div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button onclick="openRecordSheet()" class="fab active-scale touch-manipulation">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    </button>
+
+    <!-- Record Match Bottom Sheet -->
+    <div class="backdrop" id="recordBackdrop" onclick="closeRecordSheet()"></div>
+    <div class="bottom-sheet glass border-t border-slate-700" id="recordSheet">
+        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-cyan-400">记录比赛</h3>
+            <button onclick="closeRecordSheet()" class="p-2 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        
+        <div class="p-4 space-y-4 overflow-y-auto max-h-[70vh]">
+            <!-- Player Selection -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400">选手 A</label>
+                    <select id="playerA" onchange="updatePreview()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-3 text-white text-sm focus:border-cyan-500 focus:outline-none">
+                        <option value="">选择...</option>
+                    </select>
+                    <div id="preview-a" class="text-xs text-cyan-400 font-mono text-right"></div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400">选手 B</label>
+                    <select id="playerB" onchange="updatePreview()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-3 text-white text-sm focus:border-cyan-500 focus:outline-none">
+                        <option value="">选择...</option>
+                    </select>
+                    <div id="preview-b" class="text-xs text-cyan-400 font-mono text-right"></div>
+                </div>
+            </div>
+
+            <!-- Diff Preview -->
+            <div id="diff-box" class="hidden p-3 rounded-xl bg-slate-800/50 text-center text-xs">
+                <span class="text-slate-400">分差 </span>
+                <span id="diff-value" class="text-cyan-400 font-bold mx-1"></span>
+                <span id="diff-rule" class="text-slate-500"></span>
+            </div>
+
+            <!-- Games -->
+            <div class="space-y-3">
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400 font-medium">第一局</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="setGame(1, 'A')" id="g1-a" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
+                            A胜
+                        </button>
+                        <button type="button" onclick="setGame(1, 'B')" id="g1-b" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
+                            B胜
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs text-slate-400 font-medium">第二局</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="setGame(2, 'A')" id="g2-a" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
+                            A胜
+                        </button>
+                        <button type="button" onclick="setGame(2, 'B')" id="g2-b" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
+                            B胜
+                        </button>
+                    </div>
+                </div>
+
+                <div id="game3-box" class="space-y-2 hidden">
+                    <label class="text-xs text-yellow-400 font-medium flex items-center gap-1">
+                        第三局 <span class="text-[10px] bg-yellow-500/20 px-2 py-0.5 rounded">决胜</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="setGame(3, 'A')" id="g3-a" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
+                            A胜
+                        </button>
+                        <button type="button" onclick="setGame(3, 'B')" id="g3-b" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
+                            B胜
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Preview -->
+            <div id="result-box" class="hidden p-4 rounded-xl bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border border-cyan-500/20">
+                <div class="text-center mb-3">
+                    <div class="text-3xl font-bold text-white score-big mb-1" id="result-score">2:0</div>
+                    <div class="text-sm text-cyan-400" id="result-winner">-- 获胜</div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-slate-800/50 rounded-lg p-2">
+                        <div class="text-xs text-slate-400 mb-1">选手A</div>
+                        <div id="change-a" class="text-lg font-bold">--</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-lg p-2">
+                        <div class="text-xs text-slate-400 mb-1">选手B</div>
+                        <div id="change-b" class="text-lg font-bold">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="submitMatch()" id="submit-btn" disabled class="w-full py-4 rounded-xl bg-slate-700 text-slate-500 font-bold text-lg disabled:opacity-50 active-scale">
+                确认提交
+            </button>
+            
+            <button onclick="resetMatchForm()" class="w-full py-3 text-sm text-slate-500 active-scale">
+                重置
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu Bottom Sheet -->
+    <div class="backdrop" id="menuBackdrop" onclick="closeMenu()"></div>
+    <div class="bottom-sheet glass border-t border-slate-700" id="menuSheet">
+        <div class="p-4 space-y-2">
+            <div class="text-center text-slate-500 text-xs mb-4">长江瑞城乒乓球赛</div>
+            
+            <button onclick="showAddPlayer(); closeMenu()" class="w-full p-4 rounded-xl bg-slate-800 text-left flex items-center gap-3 active-scale">
+                <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                </div>
+                <div>
+                    <div class="font-medium">添加新选手</div>
+                    <div class="text-xs text-slate-500">注册新球员，初始1500分</div>
+                </div>
+            </button>
+            
+            <button onclick="showRules(); closeMenu()" class="w-full p-4 rounded-xl bg-slate-800 text-left flex items-center gap-3 active-scale">
+                <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                    <div class="font-medium">积分规则</div>
+                    <div class="text-xs text-slate-500">查看详细计分标准</div>
+                </div>
+            </button>
+            
+            <button onclick="exportData(); closeMenu()" class="w-full p-4 rounded-xl bg-slate-800 text-left flex items-center gap-3 active-scale">
+                <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </div>
+                <div>
+                    <div class="font-medium">导出数据</div>
+                    <div class="text-xs text-slate-500">备份比赛记录</div>
+                </div>
+            </button>
+            
+            <button onclick="clearAll(); closeMenu()" class="w-full p-4 rounded-xl bg-red-500/10 text-left flex items-center gap-3 active-scale text-red-400">
+                <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </div>
+                <div>
+                    <div class="font-medium">清空数据</div>
+                    <div class="text-xs text-red-400/70">重置所有记录（谨慎）</div>
+                </div>
+            </button>
+            
+            <button onclick="closeMenu()" class="w-full py-4 mt-4 text-slate-500 text-sm">
+                取消
+            </button>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="backdrop" id="rulesBackdrop" onclick="closeRules()"></div>
+    <div class="bottom-sheet glass border-t border-slate-700" id="rulesSheet">
+        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-yellow-400">积分规则说明</h3>
+            <button onclick="closeRules()" class="p-2 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-4 space-y-3 overflow-y-auto max-h-[70vh] text-sm">
+            <div class="text-slate-400 text-xs mb-2">初始积分1500分，三局两胜制</div>
+            
+            <div class="space-y-2">
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50">
+                    <span class="text-slate-300">分差 0-25分</span>
+                    <div class="text-right">
+                        <div class="text-green-400">胜方 +8</div>
+                        <div class="text-red-400">败方 -8</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-yellow-500">
+                    <span class="text-slate-300">分差 26-50分</span>
+                    <div class="text-right text-xs space-y-1">
+                        <div class="text-cyan-400">高分胜 +6 / 败 -13</div>
+                        <div class="text-yellow-400">低分胜 +13 / 败 -6</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-orange-500">
+                    <span class="text-slate-300">分差 51-100分</span>
+                    <div class="text-right text-xs space-y-1">
+                        <div class="text-cyan-400">高分胜 +4 / 败 -20</div>
+                        <div class="text-orange-400">低分胜 +20 / 败 -4</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-red-500">
+                    <span class="text-slate-300">分差 101-150分</span>
+                    <div class="text-right text-xs space-y-1">
+                        <div class="text-cyan-400">高分胜 +2 / 败 -25</div>
+                        <div class="text-red-400">低分胜 +25 / 败 -2</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-purple-500">
+                    <span class="text-slate-300">分差 151-200分</span>
+                    <div class="text-right text-xs space-y-1">
+                        <div class="text-cyan-400">高分胜 +1 / 败 -30</div>
+                        <div class="text-purple-400">低分胜 +30 / 败 -1</div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-slate-800/50 to-purple-900/20 border-l-2 border-pink-500">
+                    <span class="text-slate-300">分差 >200分</span>
+                    <div class="text-right text-xs space-y-1">
+                        <div class="text-slate-500">高分胜 0 / 败 -35</div>
+                        <div class="text-pink-400 font-bold">低分胜 +35 / 败 0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-3 rounded-xl bg-cyan-900/20 border border-cyan-500/30 text-xs text-cyan-300">
+                <strong>设计意图：</strong>鼓励挑战强者！低分选手击败高分选手可获得巨额积分奖励，高分选手需认真对待每场比赛。
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Player Modal -->
+    <div class="backdrop" id="playerBackdrop" onclick="closeAddPlayer()"></div>
+    <div class="bottom-sheet glass border-t border-slate-700" id="playerSheet">
+        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
+            <h3 class="font-bold text-lg text-cyan-400">添加新选手</h3>
+            <button onclick="closeAddPlayer()" class="p-2 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-4 space-y-4">
+            <input type="text" id="newPlayerName" placeholder="请输入选手姓名" 
+                class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white text-lg focus:border-cyan-500 focus:outline-none">
+            <div class="text-xs text-slate-500 px-1">初始积分：1500分</div>
+            <button onclick="addPlayer()" class="w-full py-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-lg active-scale">
+                确认添加
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl border border-slate-700 opacity-0 transition-opacity duration-300 pointer-events-none z-50 flex items-center gap-2">
+        <span id="toast-icon">✓</span>
+        <span id="toast-msg">操作成功</span>
+    </div>
+
+    <script>
+        // Data
+        let players = JSON.parse(localStorage.getItem('cjrc_players')) || [];
+        let matches = JSON.parse(localStorage.getItem('cjrc_matches')) || [];
+        let currentGame = { g1: null, g2: null, g3: null };
+
+        const INITIAL_RATING = 1500;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+            setupSelects();
+            
+            // Service Worker for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                    self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+                    self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+                    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline'))));
+                `)).catch(() => {});
+            }
+        });
+
+        // Calculation Logic
+        function calcPoints(ratingA, ratingB, aWins) {
+            const diff = Math.abs(ratingA - ratingB);
+            const aHigher = ratingA > ratingB;
+            let aChange, bChange;
+
+            if (diff <= 25) {
+                aChange = aWins ? 8 : -8;
+                bChange = aWins ? -8 : 8;
+            } else if (diff <= 50) {
+                if (aHigher) {
+                    aChange = aWins ? 6 : -13;
+                    bChange = aWins ? -6 : 13;
+                } else {
+                    aChange = aWins ? 13 : -6;
+                    bChange = aWins ? -13 : 6;
+                }
+            } else if (diff <= 100) {
+                if (aHigher) {
+                    aChange = aWins ? 4 : -20;
+                    bChange = aWins ? -4 : 20;
+                } else {
+                    aChange = aWins ? 20 : -4;
+                    bChange = aWins ? -20 : 4;
+                }
+            } else if (diff <= 150) {
+                if (aHigher) {
+                    aChange = aWins ? 2 : -25;
+                    bChange = aWins ? -2 : 25;
+                } else {
+                    aChange = aWins ? 25 : -2;
+                    bChange = aWins ? -25 : 2;
+                }
+            } else if (diff <= 200) {
+                if (aHigher) {
+                    aChange = aWins ? 1 : -30;
+                    bChange = aWins ? -1 : 30;
+                } else {
+                    aChange = aWins ? 30 : -1;
+                    bChange = aWins ? -30 : 1;
+                }
+            } else {
+                if (aHigher) {
+                    aChange = aWins ? 0 : -35;
+                    bChange = aWins ? 0 : 35;
+                } else {
+                    aChange = aWins ? 35 : 0;
+                    bChange = aWins ? -35 : 0;
+                }
+            }
+            return { aChange, bChange, diff };
+        }
+
+        // UI Functions
+        function renderAll() {
+            renderLeaderboard();
+            renderMatches();
+            updateStats();
+            setupSelects();
+        }
+
+        function updateStats() {
+            document.getElementById('stat-players').textContent = players.length;
+            document.getElementById('stat-matches').textContent = matches.length;
+            document.getElementById('match-count').textContent = matches.length + '场';
+            
+            if (players.length > 0) {
+                const avg = Math.round(players.reduce((a, b) => a + b.rating, 0) / players.length);
+                document.getElementById('stat-avg').textContent = avg;
+            } else {
+                document.getElementById('stat-avg').textContent = '1500';
+            }
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            if (players.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm">暂无选手数据<br>点击右下角 + 添加</div>';
+                return;
+            }
+
+            const sorted = [...players].sort((a, b) => b.rating - a.rating);
+            container.innerHTML = sorted.map((p, i) => {
+                const rank = i + 1;
+                let badge = '';
+                if (rank === 1) badge = '<span class="text-yellow-400 text-lg">🥇</span>';
+                else if (rank === 2) badge = '<span class="text-slate-300 text-lg">🥈</span>';
+                else if (rank === 3) badge = '<span class="text-amber-600 text-lg">🥉</span>';
+                else badge = `<span class="text-slate-600 w-6 text-center inline-block">${rank}</span>`;
+                
+                const change = p.rating - INITIAL_RATING;
+                const changeColor = change > 0 ? 'text-green-400' : change < 0 ? 'text-red-400' : 'text-slate-500';
+                const winRate = p.matches > 0 ? Math.round(p.wins / p.matches * 100) : 0;
+                
+                return `
+                    <div class="player-card p-4 flex items-center gap-3 active-scale">
+                        <div class="w-8">${badge}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-white truncate text-base">${p.name}</div>
+                            <div class="text-xs text-slate-500">${p.wins}胜${p.losses}负 · ${winRate}%胜率</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold text-cyan-400 score-big">${p.rating}</div>
+                            <div class="text-xs ${changeColor}">${change > 0 ? '+' : ''}${change}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMatches() {
+            const container = document.getElementById('matchesList');
+            if (matches.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录</div>';
+                return;
+            }
+
+            container.innerHTML = matches.slice(0, 20).map(m => {
+                const dots = m.games.map(g => 
+                    `<span class="w-1.5 h-1.5 rounded-full ${g === 'A' ? 'bg-cyan-400' : 'bg-slate-600'} inline-block mx-0.5"></span>`
+                ).join('');
+                
+                const aWon = m.winner === m.playerA;
+                const aClass = aWon ? 'text-cyan-400 font-bold' : 'text-slate-400';
+                const bClass = !aWon ? 'text-cyan-400 font-bold' : 'text-slate-400';
+                const aChange = m.ratingChangeA > 0 ? '+' + m.ratingChangeA : m.ratingChangeA;
+                const bChange = m.ratingChangeB > 0 ? '+' + m.ratingChangeB : m.ratingChangeB;
+                
+                return `
+                    <div class="p-4 slide-up">
+                        <div class="flex justify-between items-center mb-2 text-xs text-slate-500">
+                            <span>${m.date.split(' ')[1].slice(0, 5)}</span>
+                            <div class="flex items-center gap-1">${dots}</div>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex-1 min-w-0 text-left">
+                                <div class="${aClass} truncate">${m.playerA}</div>
+                                <div class="text-xs text-slate-500">${aChange}</div>
+                            </div>
+                            <div class="px-3 py-1 bg-slate-800 rounded-lg font-mono font-bold text-white text-lg">
+                                ${m.score}
+                            </div>
+                            <div class="flex-1 min-w-0 text-right">
+                                <div class="${bClass} truncate">${m.playerB}</div>
+                                <div class="text-xs text-slate-500">${bChange}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupSelects() {
+            const sorted = [...players].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+            const options = '<option value="">选择选手</option>' + 
+                sorted.map(p => `<option value="${p.id}">${p.name} (${p.rating})</option>`).join('');
+            
+            document.getElementById('playerA').innerHTML = options;
+            document.getElementById('playerB').innerHTML = options;
+        }
+
+        // Sheet Controls
+        function openRecordSheet() {
+            document.getElementById('recordBackdrop').classList.add('open');
+            document.getElementById('recordSheet').classList.add('open');
+            resetMatchForm();
+        }
+
+        function closeRecordSheet() {
+            document.getElementById('recordBackdrop').classList.remove('open');
+            document.getElementById('recordSheet').classList.remove('open');
+        }
+
+        function showMenu() {
+            document.getElementById('menuBackdrop').classList.add('open');
+            document.getElementById('menuSheet').classList.add('open');
+        }
+
+        function closeMenu() {
+            document.getElementById('menuBackdrop').classList.remove('open');
+            document.getElementById('menuSheet').classList.remove('open');
+        }
+
+        function showRules() {
+            document.getElementById('rulesBackdrop').classList.add('open');
+            document.getElementById('rulesSheet').classList.add('open');
+        }
+
+        function closeRules() {
+            document.getElementById('rulesBackdrop').classList.remove('open');
+            document.getElementById('rulesSheet').classList.remove('open');
+        }
+
+        function showAddPlayer() {
+            document.getElementById('playerBackdrop').classList.add('open');
+            document.getElementById('playerSheet').classList.add('open');
+            setTimeout(() => document.getElementById('newPlayerName').focus(), 100);
+        }
+
+        function closeAddPlayer() {
+            document.getElementById('playerBackdrop').classList.remove('open');
+            document.getElementById('playerSheet').classList.remove('open');
+            document.getElementById('newPlayerName').value = '';
+        }
+
+        // Match Recording
+        function updatePreview() {
+            const aId = document.getElementById('playerA').value;
+            const bId = document.getElementById('playerB').value;
+            
+            if (aId && bId) {
+                const a = players.find(p => p.id == aId);
+                const b = players.find(p => p.id == bId);
+                document.getElementById('preview-a').textContent = a.rating + '分';
+                document.getElementById('preview-b').textContent = b.rating + '分';
+                
+                const diff = Math.abs(a.rating - b.rating);
+                document.getElementById('diff-box').classList.remove('hidden');
+                document.getElementById('diff-value').textContent = diff;
+                document.getElementById('diff-rule').textContent = diff <= 25 ? '均势局' : diff > 200 ? '爆冷局!' : '有差距';
+                
+                // Update button labels
+                ['g1', 'g2', 'g3'].forEach(g => {
+                    document.getElementById(`${g}-a`).textContent = a.name.slice(0, 4) + '胜';
+                    document.getElementById(`${g}-b`).textContent = b.name.slice(0, 4) + '胜';
+                });
+            } else {
+                document.getElementById('diff-box').classList.add('hidden');
+                document.getElementById('preview-a').textContent = '';
+                document.getElementById('preview-b').textContent = '';
+            }
+            updateResult();
+        }
+
+        function setGame(game, winner) {
+            currentGame['g' + game] = winner;
+            
+            // UI update
+            const btnA = document.getElementById('g' + game + '-a');
+            const btnB = document.getElementById('g' + game + '-b');
+            
+            if (winner === 'A') {
+                btnA.classList.add('selected-winner');
+                btnA.classList.remove('selected-loser');
+                btnB.classList.add('selected-loser');
+                btnB.classList.remove('selected-winner');
+            } else {
+                btnB.classList.add('selected-winner');
+                btnB.classList.remove('selected-loser');
+                btnA.classList.add('selected-loser');
+                btnA.classList.remove('selected-winner');
+            }
+            
+            // Check for game 3
+            if (currentGame.g1 && currentGame.g2 && currentGame.g1 !== currentGame.g2) {
+                document.getElementById('game3-box').classList.remove('hidden');
+            } else {
+                document.getElementById('game3-box').classList.add('hidden');
+                currentGame.g3 = null;
+                document.getElementById('g3-a').classList.remove('selected-winner', 'selected-loser');
+                document.getElementById('g3-b').classList.remove('selected-winner', 'selected-loser');
+            }
+            
+            updateResult();
+        }
+
+        function updateResult() {
+            const g1 = currentGame.g1, g2 = currentGame.g2, g3 = currentGame.g3;
+            let winsA = 0, winsB = 0;
+            
+            if (g1 === 'A') winsA++; else if (g1 === 'B') winsB++;
+            if (g2 === 'A') winsA++; else if (g2 === 'B') winsB++;
+            if (g3 === 'A') winsA++; else if (g3 === 'B') winsB++;
+            
+            const finished = winsA >= 2 || winsB >= 2;
+            const btn = document.getElementById('submit-btn');
+            
+            if (finished) {
+                const aId = document.getElementById('playerA').value;
+                const bId = document.getElementById('playerB').value;
+                const a = players.find(p => p.id == aId);
+                const b = players.find(p => p.id == bId);
+                
+                const aWins = winsA >= 2;
+                const { aChange, bChange } = calcPoints(a.rating, b.rating, aWins);
+                
+                document.getElementById('result-box').classList.remove('hidden');
+                document.getElementById('result-score').textContent = `${winsA}:${winsB}`;
+                document.getElementById('result-winner').textContent = (aWins ? a.name : b.name) + ' 获胜';
+                
+                const ca = document.getElementById('change-a');
+                const cb = document.getElementById('change-b');
+                ca.textContent = (aChange > 0 ? '+' : '') + aChange;
+                ca.className = 'text-lg font-bold ' + (aChange > 0 ? 'text-green-400' : aChange < 0 ? 'text-red-400' : 'text-slate-400');
+                cb.textContent = (bChange > 0 ? '+' : '') + bChange;
+                cb.className = 'text-lg font-bold ' + (bChange > 0 ? 'text-green-400' : bChange < 0 ? 'text-red-400' : 'text-slate-400');
+                
+                btn.disabled = false;
+                btn.className = 'w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-lg active-scale shadow-lg shadow-cyan-500/25';
+            } else {
+                document.getElementById('result-box').classList.add('hidden');
+                btn.disabled = true;
+                btn.className = 'w-full py-4 rounded-xl bg-slate-700 text-slate-500 font-bold text-lg disabled:opacity-50';
+            }
+        }
+
+        function resetMatchForm() {
+            currentGame = { g1: null, g2: null, g3: null };
+            document.getElementById('playerA').value = '';
+            document.getElementById('playerB').value = '';
+            document.getElementById('preview-a').textContent = '';
+            document.getElementById('preview-b').textContent = '';
+            document.getElementById('diff-box').classList.add('hidden');
+            document.getElementById('game3-box').classList.add('hidden');
+            document.getElementById('result-box').classList.add('hidden');
+            
+            ['g1', 'g2', 'g3'].forEach(g => {
+                document.getElementById(g + '-a').classList.remove('selected-winner', 'selected-loser');
+                document.getElementById(g + '-b').classList.remove('selected-winner', 'selected-loser');
+            });
+            
+            updateResult();
+        }
+
+        function submitMatch() {
+            const aId = parseInt(document.getElementById('playerA').value);
+            const bId = parseInt(document.getElementById('playerB').value);
+            const a = players.find(p => p.id === aId);
+            const b = players.find(p => p.id === bId);
+            
+            let winsA = 0;
+            if (currentGame.g1 === 'A') winsA++;
+            if (currentGame.g2 === 'A') winsA++;
+            if (currentGame.g3 === 'A') winsA++;
+            const aWins = winsA >= 2;
+            
+            const { aChange, bChange, diff } = calcPoints(a.rating, b.rating, aWins);
+            
+            const oldA = a.rating, oldB = b.rating;
+            a.rating += aChange;
+            b.rating += bChange;
+            a.matches++; b.matches++;
+            if (aWins) { a.wins++; b.losses++; } else { b.wins++; a.losses++; }
+            
+            const games = [currentGame.g1, currentGame.g2];
+            if (currentGame.g3) games.push(currentGame.g3);
+            
+            matches.unshift({
+                id: Date.now(),
+                date: new Date().toLocaleString('zh-CN'),
+                playerA: a.name,
+                playerB: b.name,
+                games: games,
+                score: aWins ? (currentGame.g3 ? '2:1' : '2:0') : (currentGame.g3 ? '1:2' : '0:2'),
+                winner: aWins ? a.name : b.name,
+                ratingChangeA: aChange,
+                ratingChangeB: bChange,
+                oldRatingA: oldA,
+                oldRatingB: oldB,
+                diff: diff
+            });
+            
+            save();
+            closeRecordSheet();
+            renderAll();
+            
+            const upset = (!aWins && oldA < oldB) || (aWins && oldA > oldB);
+            const msg = (aWins ? a.name : b.name) + ' 获胜' + (upset && Math.abs(aChange) > 20 ? '（爆冷！）' : '');
+            showToast(msg);
+        }
+
+        // Player Management
+        function addPlayer() {
+            const name = document.getElementById('newPlayerName').value.trim();
+            if (!name) return showToast('请输入姓名', 'error');
+            if (players.find(p => p.name === name)) return showToast('该选手已存在', 'error');
+            
+            players.push({
+                id: Date.now(),
+                name: name,
+                rating: INITIAL_RATING,
+                matches: 0,
+                wins: 0,
+                losses: 0
+            });
+            
+            save();
+            renderAll();
+            closeAddPlayer();
+            showToast('欢迎 ' + name + ' 加入！');
+        }
+
+        // Data & Utils
+        function save() {
+            localStorage.setItem('cjrc_players', JSON.stringify(players));
+            localStorage.setItem('cjrc_matches', JSON.stringify(matches));
+        }
+
+        function refreshData() {
+            renderAll();
+            showToast('数据已刷新');
+        }
+
+        function exportData() {
+            const data = { players, matches, exportTime: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `长江瑞城乒乓球赛_${new Date().toLocaleDateString()}.json`;
+            a.click();
+            showToast('数据已导出');
+        }
+
+        function clearAll() {
+            if (!confirm('确定清空所有数据？此操作不可恢复！')) return;
+            players = [];
+            matches = [];
+            save();
+            renderAll();
+            showToast('数据已重置');
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            document.getElementById('toast-icon').textContent = type === 'success' ? '✓' : '✗';
+            toast.classList.remove('opacity-0');
+            setTimeout(() => toast.classList.add('opacity-0'), 2500);
+        }
+
+        // Pull to refresh
+        let touchStartY = 0;
+        document.addEventListener('touchstart', e => touchStartY = e.touches[0].clientY);
+        document.addEventListener('touchend', e => {
+            const touchEndY = e.changedTouches[0].clientY;
+            if (touchEndY - touchStartY > 150 && window.scrollY < 10) {
+                refreshData();
+            }
+        });
+    </script>
+</body>
+</html>
