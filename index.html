@@ -3,1252 +3,724 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="长江瑞城乒乓球">
-    <meta name="description" content="长江瑞城小区乒乓球联赛积分系统">
-    <title>长江瑞城乒乓球赛</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-    
+    <title>长江瑞城乒乓比赛</title>
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            font-family: 'Noto Sans SC', sans-serif; 
-            background: #0f172a; 
-            overscroll-behavior: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            font-size: 16px;
         }
-        .safe-top { padding-top: env(safe-area-inset-top); }
-        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-        .touch-manipulation { touch-action: manipulation; }
-        .active-scale:active { transform: scale(0.96); }
-        
-        .glass {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { 
+            text-align: center; 
+            color: white; 
+            margin: 15px 0; 
+            font-size: 1.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        
-        .game-btn {
-            transition: all 0.15s ease;
-            touch-action: manipulation;
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-        .game-btn:active { transform: scale(0.95); }
-        .game-btn.selected-winner {
-            background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
-            border-color: #22d3ee;
-            box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
-            color: white;
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; color: #666; font-size: 14px; font-weight: 600; }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 16px;
+            background: white;
         }
-        .game-btn.selected-loser {
-            background: rgba(30, 41, 59, 0.5);
-            border-color: #334155;
-            color: #64748b;
-            opacity: 0.5;
-        }
-        
-        .player-card { transition: all 0.2s ease; }
-        .player-card:active { transform: scale(0.98); }
-        
-        .slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            max-height: 90vh;
-            border-radius: 24px 24px 0 0;
-        }
-        .bottom-sheet.open { transform: translateY(0); }
-        
-        .backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-            z-index: 40;
-        }
-        .backdrop.open { opacity: 1; pointer-events: auto; }
-        
-        .fab {
-            position: fixed;
-            bottom: calc(20px + env(safe-area-inset-bottom));
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
-            box-shadow: 0 4px 20px rgba(34, 211, 238, 0.4);
+        .score-input {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 30;
-            transition: transform 0.2s;
+            gap: 10px;
+            margin-bottom: 8px;
         }
-        .fab:active { transform: scale(0.9); }
+        .score-input input {
+            width: 60px;
+            text-align: center;
+            padding: 8px;
+        }
+        .score-input span {
+            color: #999;
+            font-size: 14px;
+        }
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        button:active { transform: scale(0.98); }
+        .btn-primary { background: #07c160; color: white; }
+        .btn-primary:hover { background: #06ad56; }
+        .btn-danger { background: #ff4d4f; color: white; }
+        .btn-warning { background: #faad14; color: white; }
+        .btn-secondary { background: #f0f0f0; color: #666; }
         
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 20;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
+        .player-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .player-select select {
+            font-size: 15px;
         }
         
-        .score-big {
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background: #f8f8f8; font-weight: 600; color: #666; }
+        tr:hover { background: #f8f9fa; }
+        .score { font-weight: bold; color: #07c160; font-size: 1.1em; }
+        .positive { color: #07c160; font-weight: bold; }
+        .negative { color: #ff4d4f; font-weight: bold; }
         
-        /* Password input style */
-        .password-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #334155;
-            transition: all 0.2s;
+        .match-detail {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
         }
-        .password-dot.filled {
-            background: #22d3ee;
-            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
-        }
-        
-        /* Match item with delete button */
-        .match-item {
-            position: relative;
-            overflow: hidden;
-        }
-        .match-actions {
-            position: absolute;
-            right: -100px;
-            top: 0;
-            bottom: 0;
+        .match-header {
             display: flex;
-            transition: right 0.3s;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
-        .match-item.show-actions .match-actions {
-            right: 0;
+        .match-scores {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #666;
         }
-        .match-content {
-            transition: transform 0.3s;
+        .match-scores span {
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
         }
-        .match-item.show-actions .match-content {
-            transform: translateX(-80px);
+        .match-change {
+            margin-top: 8px;
+            font-size: 13px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-title {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .sync-status {
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            background: rgba(255,255,255,0.9);
+        }
+        .synced { background: #d4edda; color: #155724; }
+        .syncing { background: #fff3cd; color: #856404; }
+        .error { background: #f8d7da; color: #721c24; }
+        
+        .rules-content {
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .rules-content h4 {
+            margin-bottom: 8px;
+            color: #d48806;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        .winner-badge {
+            background: #ffd700;
+            color: #333;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 5px;
         }
     </style>
 </head>
-<body class="text-slate-200 safe-top safe-bottom">
-
-    <!-- Sticky Header -->
-    <header class="sticky-header px-4 py-3 border-b border-slate-800">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-lg font-bold text-cyan-400">长江瑞城乒乓球赛</h1>
-                <p class="text-xs text-slate-500">阶梯积分制 · 实时排名</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="showRules()" class="p-2 rounded-lg bg-slate-800 text-slate-400 active-scale">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </button>
-                <button onclick="showMenu()" class="p-2 rounded-lg bg-slate-800 text-slate-400 active-scale">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="px-4 py-4 pb-24 space-y-4">
-
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-3 gap-3">
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-cyan-400 score-big" id="stat-players">0</div>
-                <div class="text-xs text-slate-500">参赛人数</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-yellow-400 score-big" id="stat-matches">0</div>
-                <div class="text-xs text-slate-500">今日比赛</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-purple-400 score-big" id="stat-avg">1500</div>
-                <div class="text-xs text-slate-500">平均积分</div>
-            </div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div class="glass rounded-2xl overflow-hidden">
-            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-                <h2 class="font-bold text-yellow-400 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    实时排名
-                </h2>
-                <button onclick="refreshData()" class="text-xs text-cyan-400 active-scale p-2">
-                    刷新
-                </button>
-            </div>
-            <div id="leaderboard" class="divide-y divide-slate-700/30 max-h-96 overflow-y-auto no-scrollbar">
-                <div class="p-8 text-center text-slate-500 text-sm">暂无选手数据</div>
-            </div>
-        </div>
-
-        <!-- Recent Matches -->
-        <div class="glass rounded-2xl overflow-hidden">
-            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-                <h2 class="font-bold text-cyan-400 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    最近比赛
-                </h2>
-                <span class="text-xs text-slate-500" id="match-count">0场</span>
-            </div>
-            <div class="text-xs text-slate-500 px-4 py-2 bg-slate-800/30 border-b border-slate-700/30">
-                ← 左滑比赛记录可修改/删除（需管理密码）
-            </div>
-            <div id="matchesList" class="divide-y divide-slate-700/30 max-h-80 overflow-y-auto no-scrollbar">
-                <div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录</div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Floating Action Button -->
-    <button onclick="openRecordSheet()" class="fab active-scale touch-manipulation">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-    </button>
-
-    <!-- Record Match Bottom Sheet -->
-    <div class="backdrop" id="recordBackdrop" onclick="closeRecordSheet()"></div>
-    <div class="bottom-sheet glass border-t border-slate-700" id="recordSheet">
-        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-            <h3 class="font-bold text-lg text-cyan-400">记录比赛</h3>
-            <button onclick="closeRecordSheet()" class="p-2 text-slate-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
+<body>
+    <div class="container">
+        <h1>🏓 长江瑞城乒乓比赛</h1>
         
-        <div class="p-4 space-y-4 overflow-y-auto max-h-[70vh]">
-            <!-- Player Selection -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-2">
-                    <label class="text-xs text-slate-400">选手 A</label>
-                    <select id="playerA" onchange="updatePreview()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-3 text-white text-sm focus:border-cyan-500 focus:outline-none">
-                        <option value="">选择...</option>
+        <div id="syncStatus" class="sync-status syncing">正在连接云端...</div>
+        
+        <!-- 规则说明 -->
+        <div class="card">
+            <div class="rules-content">
+                <h4>📋 积分规则（初始分1500）</h4>
+                • 分差≤25：胜+8，败-8<br>
+                • 分差26-50：高分胜+6/败-13，低分胜+13/败-6<br>
+                • 分差51-100：高分胜+4/败-20，低分胜+20/败-4<br>
+                • 分差101-150：高分胜+2/败-25，低分胜+25/败-2<br>
+                • 分差151-200：高分胜+1/败-30，低分胜+30/败-1<br>
+                • 分差>200：高分胜+0，低分胜+35
+            </div>
+        </div>
+
+        <!-- 添加球员 -->
+        <div class="card">
+            <h3 style="margin-bottom: 12px;">➕ 添加球员</h3>
+            <div class="input-group">
+                <input type="text" id="newPlayer" placeholder="输入球员姓名">
+            </div>
+            <button class="btn-primary" onclick="addPlayer()">添加球员</button>
+        </div>
+
+        <!-- 记录比赛 -->
+        <div class="card">
+            <h3 style="margin-bottom: 12px;">📝 记录比赛（三局两胜）</h3>
+            
+            <div class="player-select">
+                <div>
+                    <label>选手A</label>
+                    <select id="playerA" onchange="updateOpponents()">
+                        <option value="">选择选手</option>
                     </select>
-                    <div id="preview-a" class="text-xs text-cyan-400 font-mono text-right"></div>
                 </div>
-                <div class="space-y-2">
-                    <label class="text-xs text-slate-400">选手 B</label>
-                    <select id="playerB" onchange="updatePreview()" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-3 py-3 text-white text-sm focus:border-cyan-500 focus:outline-none">
-                        <option value="">选择...</option>
+                <div>
+                    <label>选手B</label>
+                    <select id="playerB">
+                        <option value="">选择选手</option>
                     </select>
-                    <div id="preview-b" class="text-xs text-cyan-400 font-mono text-right"></div>
                 </div>
             </div>
-
-            <!-- Diff Preview -->
-            <div id="diff-box" class="hidden p-3 rounded-xl bg-slate-800/50 text-center text-xs">
-                <span class="text-slate-400">分差 </span>
-                <span id="diff-value" class="text-cyan-400 font-bold mx-1"></span>
-                <span id="diff-rule" class="text-slate-500"></span>
-            </div>
-
-            <!-- Games -->
-            <div class="space-y-3">
-                <div class="space-y-2">
-                    <label class="text-xs text-slate-400 font-medium">第一局</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="setGame(1, 'A')" id="g1-a" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
-                            A胜
-                        </button>
-                        <button type="button" onclick="setGame(1, 'B')" id="g1-b" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
-                            B胜
-                        </button>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-xs text-slate-400 font-medium">第二局</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="setGame(2, 'A')" id="g2-a" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
-                            A胜
-                        </button>
-                        <button type="button" onclick="setGame(2, 'B')" id="g2-b" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
-                            B胜
-                        </button>
-                    </div>
-                </div>
-
-                <div id="game3-box" class="space-y-2 hidden">
-                    <label class="text-xs text-yellow-400 font-medium flex items-center gap-1">
-                        第三局 <span class="text-[10px] bg-yellow-500/20 px-2 py-0.5 rounded">决胜</span>
-                    </label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" onclick="setGame(3, 'A')" id="g3-a" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
-                            A胜
-                        </button>
-                        <button type="button" onclick="setGame(3, 'B')" id="g3-b" class="game-btn py-3 px-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-300 text-sm font-medium">
-                            B胜
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Result Preview -->
-            <div id="result-box" class="hidden p-4 rounded-xl bg-gradient-to-r from-cyan-900/30 to-blue-900/30 border border-cyan-500/20">
-                <div class="text-center mb-3">
-                    <div class="text-3xl font-bold text-white score-big mb-1" id="result-score">2:0</div>
-                    <div class="text-sm text-cyan-400" id="result-winner">-- 获胜</div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-center">
-                    <div class="bg-slate-800/50 rounded-lg p-2">
-                        <div class="text-xs text-slate-400 mb-1">选手A</div>
-                        <div id="change-a" class="text-lg font-bold">--</div>
-                    </div>
-                    <div class="bg-slate-800/50 rounded-lg p-2">
-                        <div class="text-xs text-slate-400 mb-1">选手B</div>
-                        <div id="change-b" class="text-lg font-bold">--</div>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="submitMatch()" id="submit-btn" disabled class="w-full py-4 rounded-xl bg-slate-700 text-slate-500 font-bold text-lg disabled:opacity-50 active-scale">
-                确认提交
-            </button>
             
-            <button onclick="resetMatchForm()" class="w-full py-3 text-sm text-slate-500 active-scale">
-                重置
-            </button>
+            <div style="margin-bottom: 15px;">
+                <label>第一局比分</label>
+                <div class="score-input">
+                    <input type="number" id="game1_a" placeholder="A" min="0">
+                    <span>:</span>
+                    <input type="number" id="game1_b" placeholder="B" min="0">
+                    <span style="font-size: 12px; color: #999;">先达到11分且领先2分获胜</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label>第二局比分</label>
+                <div class="score-input">
+                    <input type="number" id="game2_a" placeholder="A" min="0">
+                    <span>:</span>
+                    <input type="number" id="game2_b" placeholder="B" min="0">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label>第三局比分（如需要）</label>
+                <div class="score-input">
+                    <input type="number" id="game3_a" placeholder="A" min="0">
+                    <span>:</span>
+                    <input type="number" id="game3_b" placeholder="B" min="0">
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="recordMatch()">提交比赛结果</button>
+        </div>
+
+        <!-- 积分榜 -->
+        <div class="card">
+            <h3 style="margin-bottom: 12px;">🏆 积分榜</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>球员</th>
+                        <th>积分</th>
+                        <th>战绩</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking"></tbody>
+            </table>
+        </div>
+
+        <!-- 比赛记录 -->
+        <div class="card">
+            <h3 style="margin-bottom: 12px;">📊 近期比赛</h3>
+            <div id="matches"></div>
+        </div>
+
+        <div class="card">
+            <button class="btn-warning" onclick="showAdmin()">⚙️ 管理功能</button>
         </div>
     </div>
 
-    <!-- Menu Bottom Sheet -->
-    <div class="backdrop" id="menuBackdrop" onclick="closeMenu()"></div>
-    <div class="bottom-sheet glass border-t border-slate-700" id="menuSheet">
-        <div class="p-4 space-y-2">
-            <div class="text-center text-slate-500 text-xs mb-4">长江瑞城乒乓球赛</div>
-            
-            <button onclick="showAddPlayer(); closeMenu()" class="w-full p-4 rounded-xl bg-slate-800 text-left flex items-center gap-3 active-scale">
-                <div class="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                </div>
-                <div>
-                    <div class="font-medium">添加新选手</div>
-                    <div class="text-xs text-slate-500">注册新球员，初始1500分</div>
-                </div>
-            </button>
-            
-            <button onclick="showRules(); closeMenu()" class="w-full p-4 rounded-xl bg-slate-800 text-left flex items-center gap-3 active-scale">
-                <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                </div>
-                <div>
-                    <div class="font-medium">积分规则</div>
-                    <div class="text-xs text-slate-500">查看详细计分标准</div>
-                </div>
-            </button>
-            
-            <button onclick="exportData(); closeMenu()" class="w-full p-4 rounded-xl bg-slate-800 text-left flex items-center gap-3 active-scale">
-                <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                </div>
-                <div>
-                    <div class="font-medium">导出数据</div>
-                    <div class="text-xs text-slate-500">备份比赛记录</div>
-                </div>
-            </button>
-            
-            <button onclick="requestClearData()" class="w-full p-4 rounded-xl bg-red-500/10 text-left flex items-center gap-3 active-scale text-red-400">
-                <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </div>
-                <div>
-                    <div class="font-medium">清空所有数据</div>
-                    <div class="text-xs text-red-400/70">需管理密码（谨慎操作）</div>
-                </div>
-            </button>
-            
-            <button onclick="closeMenu()" class="w-full py-4 mt-4 text-slate-500 text-sm">
-                取消
-            </button>
+    <!-- 管理模态框 -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">管理功能</h3>
+            <input type="password" id="adminPwd" placeholder="管理密码" style="margin-bottom: 15px;">
+            <button class="btn-primary" onclick="checkAdmin()">进入管理</button>
+            <button class="btn-secondary" onclick="closeModal()" style="margin-top: 8px;">取消</button>
         </div>
     </div>
 
-    <!-- Password Modal -->
-    <div class="backdrop" id="passwordBackdrop" onclick="closePasswordModal()"></div>
-    <div class="bottom-sheet glass border-t border-slate-700" id="passwordSheet">
-        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-            <h3 class="font-bold text-lg text-yellow-400" id="password-title">管理验证</h3>
-            <button onclick="closePasswordModal()" class="p-2 text-slate-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+    <!-- 管理面板 -->
+    <div id="adminPanel" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">管理面板</h3>
+            <button class="btn-danger" onclick="undoLastMatch()" style="margin-bottom: 10px;">撤销上一场比赛</button>
+            <button class="btn-danger" onclick="confirmClearAll()" style="margin-bottom: 10px;">清空所有数据</button>
+            <button class="btn-secondary" onclick="closeModal()">关闭</button>
         </div>
-        <div class="p-6 space-y-6">
-            <div class="text-center text-slate-400 text-sm" id="password-desc">
-                请输入6位管理密码
-            </div>
-            
-            <!-- Password Display -->
-            <div class="flex justify-center gap-3 mb-4">
-                <div class="password-dot" id="pwd-1"></div>
-                <div class="password-dot" id="pwd-2"></div>
-                <div class="password-dot" id="pwd-3"></div>
-                <div class="password-dot" id="pwd-4"></div>
-                <div class="password-dot" id="pwd-5"></div>
-                <div class="password-dot" id="pwd-6"></div>
-            </div>
-            
-            <!-- Keypad -->
-            <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-                <button onclick="pressKey(1)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">1</button>
-                <button onclick="pressKey(2)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">2</button>
-                <button onclick="pressKey(3)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">3</button>
-                <button onclick="pressKey(4)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">4</button>
-                <button onclick="pressKey(5)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">5</button>
-                <button onclick="pressKey(6)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">6</button>
-                <button onclick="pressKey(7)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">7</button>
-                <button onclick="pressKey(8)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">8</button>
-                <button onclick="pressKey(9)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">9</button>
-                <button onclick="clearKey()" class="py-4 rounded-xl bg-slate-700 text-sm text-slate-400 active-scale">清除</button>
-                <button onclick="pressKey(0)" class="py-4 rounded-xl bg-slate-800 text-xl font-bold text-white active-scale">0</button>
-                <button onclick="backspaceKey()" class="py-4 rounded-xl bg-slate-700 text-sm text-slate-400 active-scale">退格</button>
-            </div>
-            
-            <div class="text-center text-xs text-slate-500 mt-4">
-                默认密码：234567
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Match Modal -->
-    <div class="backdrop" id="editBackdrop" onclick="closeEditModal()"></div>
-    <div class="bottom-sheet glass border-t border-slate-700" id="editSheet">
-        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-            <h3 class="font-bold text-lg text-cyan-400">修改比赛结果</h3>
-            <button onclick="closeEditModal()" class="p-2 text-slate-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div class="p-4 space-y-4">
-            <div class="p-3 rounded-xl bg-slate-800/50 text-sm text-slate-300" id="edit-match-info">
-                正在加载...
-            </div>
-            
-            <div class="space-y-2">
-                <label class="text-xs text-slate-400">更正比赛结果</label>
-                <div class="grid grid-cols-2 gap-2" id="edit-buttons">
-                    <!-- Dynamic buttons -->
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="saveEdit()" class="py-3 rounded-xl bg-cyan-600 text-white font-bold active-scale">
-                    保存修改
-                </button>
-                <button onclick="deleteMatch()" class="py-3 rounded-xl bg-red-600/20 text-red-400 font-bold active-scale">
-                    删除记录
-                </button>
-            </div>
-            
-            <div class="text-xs text-slate-500 text-center">
-                修改后会重新计算双方积分
-            </div>
-        </div>
-    </div>
-
-    <!-- Rules Modal -->
-    <div class="backdrop" id="rulesBackdrop" onclick="closeRules()"></div>
-    <div class="bottom-sheet glass border-t border-slate-700" id="rulesSheet">
-        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-            <h3 class="font-bold text-lg text-yellow-400">积分规则说明</h3>
-            <button onclick="closeRules()" class="p-2 text-slate-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div class="p-4 space-y-3 overflow-y-auto max-h-[70vh] text-sm">
-            <div class="text-slate-400 text-xs mb-2">初始积分1500分，三局两胜制</div>
-            
-            <div class="space-y-2">
-                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50">
-                    <span class="text-slate-300">分差 0-25分</span>
-                    <div class="text-right">
-                        <div class="text-green-400">胜方 +8</div>
-                        <div class="text-red-400">败方 -8</div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-yellow-500">
-                    <span class="text-slate-300">分差 26-50分</span>
-                    <div class="text-right text-xs space-y-1">
-                        <div class="text-cyan-400">高分胜 +6 / 败 -13</div>
-                        <div class="text-yellow-400">低分胜 +13 / 败 -6</div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-orange-500">
-                    <span class="text-slate-300">分差 51-100分</span>
-                    <div class="text-right text-xs space-y-1">
-                        <div class="text-cyan-400">高分胜 +4 / 败 -20</div>
-                        <div class="text-orange-400">低分胜 +20 / 败 -4</div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-red-500">
-                    <span class="text-slate-300">分差 101-150分</span>
-                    <div class="text-right text-xs space-y-1">
-                        <div class="text-cyan-400">高分胜 +2 / 败 -25</div>
-                        <div class="text-red-400">低分胜 +25 / 败 -2</div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-800/50 border-l-2 border-purple-500">
-                    <span class="text-slate-300">分差 151-200分</span>
-                    <div class="text-right text-xs space-y-1">
-                        <div class="text-cyan-400">高分胜 +1 / 败 -30</div>
-                        <div class="text-purple-400">低分胜 +30 / 败 -1</div>
-                    </div>
-                </div>
-                
-                <div class="flex justify-between items-center p-3 rounded-xl bg-gradient-to-r from-slate-800/50 to-purple-900/20 border-l-2 border-pink-500">
-                    <span class="text-slate-300">分差 >200分</span>
-                    <div class="text-right text-xs space-y-1">
-                        <div class="text-slate-500">高分胜 0 / 败 -35</div>
-                        <div class="text-pink-400 font-bold">低分胜 +35 / 败 0</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-4 p-3 rounded-xl bg-cyan-900/20 border border-cyan-500/30 text-xs text-cyan-300">
-                <strong>设计意图：</strong>鼓励挑战强者！低分选手击败高分选手可获得巨额积分奖励，高分选手需认真对待每场比赛。
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Player Modal -->
-    <div class="backdrop" id="playerBackdrop" onclick="closeAddPlayer()"></div>
-    <div class="bottom-sheet glass border-t border-slate-700" id="playerSheet">
-        <div class="p-4 border-b border-slate-700/50 flex justify-between items-center">
-            <h3 class="font-bold text-lg text-cyan-400">添加新选手</h3>
-            <button onclick="closeAddPlayer()" class="p-2 text-slate-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div class="p-4 space-y-4">
-            <input type="text" id="newPlayerName" placeholder="请输入选手姓名" 
-                class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-4 text-white text-lg focus:border-cyan-500 focus:outline-none">
-            <div class="text-xs text-slate-500 px-1">初始积分：1500分</div>
-            <button onclick="addPlayer()" class="w-full py-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-lg active-scale">
-                确认添加
-            </button>
-        </div>
-    </div>
-
-    <!-- Toast -->
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl border border-slate-700 opacity-0 transition-opacity duration-300 pointer-events-none z-50 flex items-center gap-2">
-        <span id="toast-icon">✓</span>
-        <span id="toast-msg">操作成功</span>
     </div>
 
     <script>
-        // Config
-        const ADMIN_PASSWORD = '234567';
-        let currentPassword = '';
-        let passwordCallback = null;
-        let editingMatchId = null;
-        let editingMatchIndex = -1;
-
-        // Data
-        let players = JSON.parse(localStorage.getItem('cjrc_players')) || [];
-        let matches = JSON.parse(localStorage.getItem('cjrc_matches')) || [];
-        let currentGame = { g1: null, g2: null, g3: null };
-
-        const INITIAL_RATING = 1500;
-
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            renderAll();
-            setupSwipe();
-        });
-
-        // Password System
-        function showPasswordModal(title, desc, callback) {
-            document.getElementById('password-title').textContent = title;
-            document.getElementById('password-desc').textContent = desc;
-            currentPassword = '';
-            updatePasswordDisplay();
-            passwordCallback = callback;
-            
-            document.getElementById('passwordBackdrop').classList.add('open');
-            document.getElementById('passwordSheet').classList.add('open');
+        // ==================== 配置区 ====================
+        // JSONBin.io 配置（免费，每月10,000次请求）
+        const MASTER_KEY = '$2a$10$你的MasterKey'; // 替换为你的Master Key
+        const BIN_ID = '你的BinID'; // 替换为你的Bin ID
+        
+        // 或者使用 MyJSON（无需注册）
+        // const JSON_URL = 'https://api.myjson.ditty.workers.dev/你的ID';
+        
+        // ==================== 数据区 ====================
+        let data = {
+            players: [],
+            matches: [],
+            lastUpdate: Date.now()
+        };
+        
+        // ==================== 本地存储备份 ====================
+        function saveLocal() {
+            localStorage.setItem('pingpong_backup_v2', JSON.stringify(data));
         }
-
-        function closePasswordModal() {
-            document.getElementById('passwordBackdrop').classList.remove('open');
-            document.getElementById('passwordSheet').classList.remove('open');
-            currentPassword = '';
-            passwordCallback = null;
+        
+        function loadLocal() {
+            const backup = localStorage.getItem('pingpong_backup_v2');
+            if (backup) {
+                data = JSON.parse(backup);
+                render();
+            }
         }
-
-        function pressKey(num) {
-            if (currentPassword.length < 6) {
-                currentPassword += num;
-                updatePasswordDisplay();
+        
+        // ==================== 云端同步 ====================
+        async function syncFromCloud() {
+            try {
+                updateStatus('syncing', '正在同步...');
                 
-                if (currentPassword.length === 6) {
-                    setTimeout(checkPassword, 200);
-                }
-            }
-        }
-
-        function backspaceKey() {
-            currentPassword = currentPassword.slice(0, -1);
-            updatePasswordDisplay();
-        }
-
-        function clearKey() {
-            currentPassword = '';
-            updatePasswordDisplay();
-        }
-
-        function updatePasswordDisplay() {
-            for (let i = 1; i <= 6; i++) {
-                const dot = document.getElementById('pwd-' + i);
-                if (i <= currentPassword.length) {
-                    dot.classList.add('filled');
-                } else {
-                    dot.classList.remove('filled');
-                }
-            }
-        }
-
-        // 修复：先保存回调再关闭弹窗
-        function checkPassword() {
-            if (currentPassword === ADMIN_PASSWORD) {
-                const cb = passwordCallback;
-                closePasswordModal();
-                if (cb) cb();
-            } else {
-                showToast('密码错误', 'error');
-                currentPassword = '';
-                updatePasswordDisplay();
-            }
-        }
-
-        // Protected Actions
-        function requestClearData() {
-            showPasswordModal(
-                '清空数据确认',
-                '请输入管理密码以清空所有数据',
-                () => {
-                    if (confirm('确定要清空所有选手和比赛数据吗？此操作不可恢复！')) {
-                        players = [];
-                        matches = [];
-                        save();
-                        renderAll();
-                        showToast('所有数据已清空');
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                
+                if (res.ok) {
+                    const result = await res.json();
+                    if (result.record) {
+                        // 合并数据（以云端为准，但保留本地有而云端没有的球员）
+                        const cloudData = result.record;
+                        const localPlayers = data.players.filter(p => 
+                            !cloudData.players.find(cp => cp.name === p.name)
+                        );
+                        data = {
+                            players: [...cloudData.players, ...localPlayers],
+                            matches: cloudData.matches || [],
+                            lastUpdate: Date.now()
+                        };
+                        // 重新排序球员
+                        data.players.sort((a, b) => b.score - a.score);
+                        saveLocal();
+                        render();
+                        updateStatus('synced', '已同步 ' + new Date().toLocaleTimeString());
                     }
-                }
-            );
-        }
-
-        function requestEditMatch(matchId, index) {
-            editingMatchId = matchId;
-            editingMatchIndex = index;
-            
-            showPasswordModal(
-                '修改比赛记录',
-                '请输入管理密码以修改/删除此场比赛',
-                () => {
-                    openEditModal(matchId, index);
-                }
-            );
-        }
-
-        // Calculation Logic
-        function calcPoints(ratingA, ratingB, aWins) {
-            const diff = Math.abs(ratingA - ratingB);
-            const aHigher = ratingA > ratingB;
-            let aChange, bChange;
-
-            if (diff <= 25) {
-                aChange = aWins ? 8 : -8;
-                bChange = aWins ? -8 : 8;
-            } else if (diff <= 50) {
-                if (aHigher) {
-                    aChange = aWins ? 6 : -13;
-                    bChange = aWins ? -6 : 13;
                 } else {
-                    aChange = aWins ? 13 : -6;
-                    bChange = aWins ? -13 : 6;
+                    throw new Error('获取失败');
                 }
-            } else if (diff <= 100) {
-                if (aHigher) {
-                    aChange = aWins ? 4 : -20;
-                    bChange = aWins ? -4 : 20;
-                } else {
-                    aChange = aWins ? 20 : -4;
-                    bChange = aWins ? -20 : 4;
-                }
-            } else if (diff <= 150) {
-                if (aHigher) {
-                    aChange = aWins ? 2 : -25;
-                    bChange = aWins ? -2 : 25;
-                } else {
-                    aChange = aWins ? 25 : -2;
-                    bChange = aWins ? -25 : 2;
-                }
-            } else if (diff <= 200) {
-                if (aHigher) {
-                    aChange = aWins ? 1 : -30;
-                    bChange = aWins ? -1 : 30;
-                } else {
-                    aChange = aWins ? 30 : -1;
-                    bChange = aWins ? -30 : 1;
-                }
-            } else {
-                if (aHigher) {
-                    aChange = aWins ? 0 : -35;
-                    bChange = aWins ? 0 : 35;
-                } else {
-                    aChange = aWins ? 35 : 0;
-                    bChange = aWins ? -35 : 0;
-                }
-            }
-            return { aChange, bChange, diff };
-        }
-
-        // UI Functions
-        function renderAll() {
-            renderLeaderboard();
-            renderMatches();
-            updateStats();
-            setupSelects();
-        }
-
-        function updateStats() {
-            document.getElementById('stat-players').textContent = players.length;
-            document.getElementById('stat-matches').textContent = matches.length;
-            document.getElementById('match-count').textContent = matches.length + '场';
-            
-            if (players.length > 0) {
-                const avg = Math.round(players.reduce((a, b) => a + b.rating, 0) / players.length);
-                document.getElementById('stat-avg').textContent = avg;
-            } else {
-                document.getElementById('stat-avg').textContent = '1500';
+            } catch (e) {
+                console.log('云端获取失败，使用本地数据', e);
+                loadLocal();
+                updateStatus('error', '离线模式（本地数据）');
             }
         }
-
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboard');
-            if (players.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm">暂无选手数据<br>点击右下角 + 添加</div>';
-                return;
-            }
-
-            const sorted = [...players].sort((a, b) => b.rating - a.rating);
-            container.innerHTML = sorted.map((p, i) => {
-                const rank = i + 1;
-                let badge = '';
-                if (rank === 1) badge = '<span class="text-yellow-400 text-lg">🥇</span>';
-                else if (rank === 2) badge = '<span class="text-slate-300 text-lg">🥈</span>';
-                else if (rank === 3) badge = '<span class="text-amber-600 text-lg">🥉</span>';
-                else badge = `<span class="text-slate-600 w-6 text-center inline-block">${rank}</span>`;
+        
+        async function syncToCloud() {
+            try {
+                updateStatus('syncing', '正在保存...');
+                data.lastUpdate = Date.now();
                 
-                const change = p.rating - INITIAL_RATING;
-                const changeColor = change > 0 ? 'text-green-400' : change < 0 ? 'text-red-400' : 'text-slate-500';
-                const winRate = p.matches > 0 ? Math.round(p.wins / p.matches * 100) : 0;
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    saveLocal();
+                    updateStatus('synced', '已保存 ' + new Date().toLocaleTimeString());
+                    return true;
+                }
+                throw new Error('保存失败');
+            } catch (e) {
+                saveLocal();
+                updateStatus('error', '保存失败，已存本地');
+                return false;
+            }
+        }
+        
+        function updateStatus(type, msg) {
+            const el = document.getElementById('syncStatus');
+            el.className = 'sync-status ' + type;
+            el.textContent = msg;
+        }
+        
+        // ==================== 核心功能 ====================
+        function calculateChange(winnerScore, loserScore) {
+            const diff = Math.abs(winnerScore - loserScore);
+            const isHighWin = winnerScore > loserScore;
+            
+            if (diff <= 25) return [8, -8];
+            if (diff <= 50) return isHighWin ? [6, -13] : [13, -6];
+            if (diff <= 100) return isHighWin ? [4, -20] : [20, -4];
+            if (diff <= 150) return isHighWin ? [2, -25] : [25, -2];
+            if (diff <= 200) return isHighWin ? [1, -30] : [30, -1];
+            return isHighWin ? [0, -35] : [35, 0];
+        }
+        
+        function getWinner(games) {
+            // games: [[a,b], [a,b], [a,b]] 可能只有2局
+            let aWins = 0, bWins = 0;
+            const validGames = games.filter(g => g[0] !== '' && g[1] !== '' && g[0] !== null && g[1] !== null);
+            
+            validGames.forEach(([a, b]) => {
+                if (parseInt(a) > parseInt(b)) aWins++;
+                else bWins++;
+            });
+            
+            if (aWins >= 2) return 'A';
+            if (bWins >= 2) return 'B';
+            return null;
+        }
+        
+        function recordMatch() {
+            const playerA = document.getElementById('playerA').value;
+            const playerB = document.getElementById('playerB').value;
+            
+            if (!playerA || !playerB) return alert('请选择双方选手');
+            if (playerA === playerB) return alert('不能选择同一人');
+            
+            // 获取比分
+            const games = [
+                [document.getElementById('game1_a').value, document.getElementById('game1_b').value],
+                [document.getElementById('game2_a').value, document.getElementById('game2_b').value],
+                [document.getElementById('game3_a').value, document.getElementById('game3_b').value]
+            ];
+            
+            // 验证前两局
+            if (!games[0][0] || !games[0][1] || !games[1][0] || !games[1][1]) {
+                return alert('请填写前两局比分');
+            }
+            
+            const winner = getWinner(games);
+            if (!winner) return alert('无法判定胜负，请检查比分（需打满三局两胜）');
+            
+            const winnerName = winner === 'A' ? playerA : playerB;
+            const loserName = winner === 'A' ? playerB : playerA;
+            
+            // 获取或创建球员
+            let winnerPlayer = data.players.find(p => p.name === winnerName);
+            let loserPlayer = data.players.find(p => p.name === loserName);
+            
+            if (!winnerPlayer) {
+                winnerPlayer = { name: winnerName, score: 1500, wins: 0, losses: 0 };
+                data.players.push(winnerPlayer);
+            }
+            if (!loserPlayer) {
+                loserPlayer = { name: loserName, score: 1500, wins: 0, losses: 0 };
+                data.players.push(loserPlayer);
+            }
+            
+            // 计算积分变化
+            const [wChange, lChange] = calculateChange(winnerPlayer.score, loserPlayer.score);
+            
+            // 记录比赛
+            const match = {
+                id: Date.now(),
+                time: Date.now(),
+                winner: winnerName,
+                loser: loserName,
+                winnerBefore: winnerPlayer.score,
+                loserBefore: loserPlayer.score,
+                winnerChange: wChange,
+                loserChange: lChange,
+                games: games.filter(g => g[0] !== '' && g[1] !== ''),
+                playerA: playerA,
+                playerB: playerB
+            };
+            
+            // 更新积分
+            winnerPlayer.score += wChange;
+            loserPlayer.score += lChange;
+            winnerPlayer.wins++;
+            loserPlayer.losses++;
+            
+            data.matches.unshift(match);
+            
+            // 同步并刷新
+            syncToCloud().then(() => {
+                render();
+                // 清空表单
+                document.getElementById('game1_a').value = '';
+                document.getElementById('game1_b').value = '';
+                document.getElementById('game2_a').value = '';
+                document.getElementById('game2_b').value = '';
+                document.getElementById('game3_a').value = '';
+                document.getElementById('game3_b').value = '';
+                
+                alert(`比赛记录成功！\n${winnerName} ${wChange > 0 ? '+' : ''}${wChange}分\n${loserName} ${lChange}分`);
+            });
+        }
+        
+        function addPlayer() {
+            const name = document.getElementById('newPlayer').value.trim();
+            if (!name) return alert('请输入球员姓名');
+            if (data.players.find(p => p.name === name)) return alert('该球员已存在');
+            
+            data.players.push({ name: name, score: 1500, wins: 0, losses: 0 });
+            
+            syncToCloud().then(() => {
+                render();
+                document.getElementById('newPlayer').value = '';
+                alert(`球员 ${name} 已添加，初始积分1500`);
+            });
+        }
+        
+        // ==================== 渲染 ====================
+        function render() {
+            // 排序球员
+            data.players.sort((a, b) => b.score - a.score);
+            
+            // 渲染积分榜
+            const rankingHtml = data.players.map((p, i) => {
+                const total = p.wins + p.losses;
+                const rate = total > 0 ? ((p.wins / total) * 100).toFixed(0) : 0;
+                const medal = i < 3 ? ['🥇','🥈','🥉'][i] : '';
                 
                 return `
-                    <div class="player-card p-4 flex items-center gap-3 active-scale">
-                        <div class="w-8">${badge}</div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-bold text-white truncate text-base">${p.name}</div>
-                            <div class="text-xs text-slate-500">${p.wins}胜${p.losses}负 · ${winRate}%胜率</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xl font-bold text-cyan-400 score-big">${p.rating}</div>
-                            <div class="text-xs ${changeColor}">${change > 0 ? '+' : ''}${change}</div>
-                        </div>
-                    </div>
+                    <tr>
+                        <td>${medal} ${i + 1}</td>
+                        <td style="text-align: left; padding-left: 10px;">
+                            <strong>${p.name}</strong>
+                        </td>
+                        <td class="score">${p.score}</td>
+                        <td style="font-size: 12px;">
+                            ${p.wins}胜${p.losses}负<br>
+                            <span style="color: #999;">胜率${rate}%</span>
+                        </td>
+                    </tr>
                 `;
             }).join('');
-        }
-
-        function renderMatches() {
-            const container = document.getElementById('matchesList');
-            if (matches.length === 0) {
-                container.innerHTML = '<div class="p-8 text-center text-slate-500 text-sm">暂无比赛记录<br>左滑可修改历史记录（需密码）</div>';
-                return;
-            }
-
-            container.innerHTML = matches.map((m, idx) => {
-                const dots = m.games.map(g => 
-                    `<span class="w-1.5 h-1.5 rounded-full ${g === 'A' ? 'bg-cyan-400' : 'bg-slate-600'} inline-block mx-0.5"></span>`
+            document.getElementById('ranking').innerHTML = rankingHtml || 
+                '<tr><td colspan="4" class="empty-state">暂无球员</td></tr>';
+            
+            // 渲染比赛记录
+            const matchesHtml = data.matches.slice(0, 10).map(m => {
+                const date = new Date(m.time).toLocaleString('zh-CN', {
+                    month: 'numeric', day: 'numeric', 
+                    hour: '2-digit', minute: '2-digit'
+                });
+                
+                const gamesStr = m.games.map((g, i) => 
+                    `<span>第${i+1}局: ${g[0]}:${g[1]}</span>`
                 ).join('');
                 
-                const aWon = m.winner === m.playerA;
-                const aClass = aWon ? 'text-cyan-400 font-bold' : 'text-slate-400';
-                const bClass = !aWon ? 'text-cyan-400 font-bold' : 'text-slate-400';
-                const aChange = m.ratingChangeA > 0 ? '+' + m.ratingChangeA : m.ratingChangeA;
-                const bChange = m.ratingChangeB > 0 ? '+' + m.ratingChangeB : m.ratingChangeB;
-                
                 return `
-                    <div class="match-item" data-id="${m.id}" data-index="${idx}">
-                        <div class="match-content p-4 slide-up">
-                            <div class="flex justify-between items-center mb-2 text-xs text-slate-500">
-                                <span>${m.date.split(' ')[1].slice(0, 5)}</span>
-                                <div class="flex items-center gap-1">${dots}</div>
-                            </div>
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="flex-1 min-w-0 text-left">
-                                    <div class="${aClass} truncate">${m.playerA}</div>
-                                    <div class="text-xs text-slate-500">${aChange}</div>
-                                </div>
-                                <div class="px-3 py-1 bg-slate-800 rounded-lg font-mono font-bold text-white text-lg">
-                                    ${m.score}
-                                </div>
-                                <div class="flex-1 min-w-0 text-right">
-                                    <div class="${bClass} truncate">${m.playerB}</div>
-                                    <div class="text-xs text-slate-500">${bChange}</div>
-                                </div>
-                            </div>
+                    <div class="match-detail">
+                        <div class="match-header">
+                            <span>${date}</span>
+                            <span style="font-size: 12px; color: #999;">${m.playerA} vs ${m.playerB}</span>
                         </div>
-                        <div class="match-actions">
-                            <button onclick="requestEditMatch(${m.id}, ${idx})" class="h-full px-4 bg-yellow-600 text-white font-bold text-sm">
-                                修改
-                            </button>
+                        <div class="match-scores">
+                            ${gamesStr}
+                        </div>
+                        <div class="match-change">
+                            <span class="winner-badge">胜</span> ${m.winner} 
+                            <span class="positive">+${m.winnerChange}</span> 
+                            (赛前${m.winnerBefore})<br>
+                            ${m.loser} 
+                            <span class="negative">${m.loserChange}</span> 
+                            (赛前${m.loserBefore})
                         </div>
                     </div>
                 `;
             }).join('');
-        }
-
-        function setupSwipe() {
-            let startX = 0;
-            let currentItem = null;
-
-            const container = document.getElementById('matchesList');
+            document.getElementById('matches').innerHTML = matchesHtml || 
+                '<div class="empty-state">暂无比赛记录</div>';
             
-            container.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                const item = e.target.closest('.match-item');
-                if (item) {
-                    // Close others
-                    document.querySelectorAll('.match-item.show-actions').forEach(i => {
-                        if (i !== item) i.classList.remove('show-actions');
-                    });
-                    currentItem = item;
-                }
-            }, { passive: true });
-
-            container.addEventListener('touchend', (e) => {
-                if (!currentItem) return;
-                const endX = e.changedTouches[0].clientX;
-                const diff = startX - endX;
-                
-                if (diff > 50) {
-                    currentItem.classList.add('show-actions');
-                } else if (diff < -50) {
-                    currentItem.classList.remove('show-actions');
-                }
-                currentItem = null;
-            }, { passive: true });
+            // 更新选手下拉框
+            updatePlayerSelects();
         }
-
-        function setupSelects() {
-            const sorted = [...players].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
-            const options = '<option value="">选择选手</option>' + 
-                sorted.map(p => `<option value="${p.id}">${p.name} (${p.rating})</option>`).join('');
+        
+        function updatePlayerSelects() {
+            const options = data.players.map(p => 
+                `<option value="${p.name}">${p.name} (${p.score}分)</option>`
+            ).join('');
             
-            document.getElementById('playerA').innerHTML = options;
-            document.getElementById('playerB').innerHTML = options;
-        }
-
-        // Sheet Controls
-        function openRecordSheet() {
-            document.getElementById('recordBackdrop').classList.add('open');
-            document.getElementById('recordSheet').classList.add('open');
-            resetMatchForm();
-        }
-
-        function closeRecordSheet() {
-            document.getElementById('recordBackdrop').classList.remove('open');
-            document.getElementById('recordSheet').classList.remove('open');
-        }
-
-        function showMenu() {
-            document.getElementById('menuBackdrop').classList.add('open');
-            document.getElementById('menuSheet').classList.add('open');
-        }
-
-        function closeMenu() {
-            document.getElementById('menuBackdrop').classList.remove('open');
-            document.getElementById('menuSheet').classList.remove('open');
-        }
-
-        function showRules() {
-            document.getElementById('rulesBackdrop').classList.add('open');
-            document.getElementById('rulesSheet').classList.add('open');
-        }
-
-        function closeRules() {
-            document.getElementById('rulesBackdrop').classList.remove('open');
-            document.getElementById('rulesSheet').classList.remove('open');
-        }
-
-        function showAddPlayer() {
-            document.getElementById('playerBackdrop').classList.add('open');
-            document.getElementById('playerSheet').classList.add('open');
-            setTimeout(() => document.getElementById('newPlayerName').focus(), 100);
-        }
-
-        function closeAddPlayer() {
-            document.getElementById('playerBackdrop').classList.remove('open');
-            document.getElementById('playerSheet').classList.remove('open');
-            document.getElementById('newPlayerName').value = '';
-        }
-
-        // Match Recording
-        function updatePreview() {
-            const aId = document.getElementById('playerA').value;
-            const bId = document.getElementById('playerB').value;
+            const aSelect = document.getElementById('playerA');
+            const bSelect = document.getElementById('playerB');
             
-            if (aId && bId) {
-                const a = players.find(p => p.id == aId);
-                const b = players.find(p => p.id == bId);
-                document.getElementById('preview-a').textContent = a.rating + '分';
-                document.getElementById('preview-b').textContent = b.rating + '分';
-                
-                const diff = Math.abs(a.rating - b.rating);
-                document.getElementById('diff-box').classList.remove('hidden');
-                document.getElementById('diff-value').textContent = diff;
-                document.getElementById('diff-rule').textContent = diff <= 25 ? '均势局' : diff > 200 ? '爆冷局!' : '有差距';
-                
-                ['g1', 'g2', 'g3'].forEach(g => {
-                    document.getElementById(`${g}-a`).textContent = a.name.slice(0, 4) + '胜';
-                    document.getElementById(`${g}-b`).textContent = b.name.slice(0, 4) + '胜';
-                });
+            const aVal = aSelect.value;
+            const bVal = bSelect.value;
+            
+            aSelect.innerHTML = '<option value="">选择选手</option>' + options;
+            bSelect.innerHTML = '<option value="">选择选手</option>' + options;
+            
+            aSelect.value = aVal;
+            bSelect.value = bVal;
+        }
+        
+        function updateOpponents() {
+            // 当选择A后，B的选择框可以过滤掉A（可选功能）
+            const aVal = document.getElementById('playerA').value;
+            const bSelect = document.getElementById('playerB');
+            
+            // 重新生成B的选项，但排除A
+            const options = data.players
+                .filter(p => p.name !== aVal)
+                .map(p => `<option value="${p.name}">${p.name} (${p.score}分)</option>`)
+                .join('');
+            
+            bSelect.innerHTML = '<option value="">选择选手</option>' + options;
+        }
+        
+        // ==================== 管理功能 ====================
+        function showAdmin() {
+            document.getElementById('adminModal').style.display = 'flex';
+            document.getElementById('adminPwd').value = '';
+        }
+        
+        function checkAdmin() {
+            if (document.getElementById('adminPwd').value === '234567') {
+                closeModal();
+                document.getElementById('adminPanel').style.display = 'flex';
             } else {
-                document.getElementById('diff-box').classList.add('hidden');
-                document.getElementById('preview-a').textContent = '';
-                document.getElementById('preview-b').textContent = '';
-            }
-            updateResult();
-        }
-
-        function setGame(game, winner) {
-            currentGame['g' + game] = winner;
-            
-            const btnA = document.getElementById('g' + game + '-a');
-            const btnB = document.getElementById('g' + game + '-b');
-            
-            if (winner === 'A') {
-                btnA.classList.add('selected-winner');
-                btnA.classList.remove('selected-loser');
-                btnB.classList.add('selected-loser');
-                btnB.classList.remove('selected-winner');
-            } else {
-                btnB.classList.add('selected-winner');
-                btnB.classList.remove('selected-loser');
-                btnA.classList.add('selected-loser');
-                btnA.classList.remove('selected-winner');
-            }
-            
-            if (currentGame.g1 && currentGame.g2 && currentGame.g1 !== currentGame.g2) {
-                document.getElementById('game3-box').classList.remove('hidden');
-            } else {
-                document.getElementById('game3-box').classList.add('hidden');
-                currentGame.g3 = null;
-                document.getElementById('g3-a').classList.remove('selected-winner', 'selected-loser');
-                document.getElementById('g3-b').classList.remove('selected-winner', 'selected-loser');
-            }
-            
-            updateResult();
-        }
-
-        function updateResult() {
-            const g1 = currentGame.g1, g2 = currentGame.g2, g3 = currentGame.g3;
-            let winsA = 0, winsB = 0;
-            
-            if (g1 === 'A') winsA++; else if (g1 === 'B') winsB++;
-            if (g2 === 'A') winsA++; else if (g2 === 'B') winsB++;
-            if (g3 === 'A') winsA++; else if (g3 === 'B') winsB++;
-            
-            const finished = winsA >= 2 || winsB >= 2;
-            const btn = document.getElementById('submit-btn');
-            
-            if (finished) {
-                const aId = document.getElementById('playerA').value;
-                const bId = document.getElementById('playerB').value;
-                const a = players.find(p => p.id == aId);
-                const b = players.find(p => p.id == bId);
-                
-                const aWins = winsA >= 2;
-                const { aChange, bChange } = calcPoints(a.rating, b.rating, aWins);
-                
-                document.getElementById('result-box').classList.remove('hidden');
-                document.getElementById('result-score').textContent = `${winsA}:${winsB}`;
-                document.getElementById('result-winner').textContent = (aWins ? a.name : b.name) + ' 获胜';
-                
-                const ca = document.getElementById('change-a');
-                const cb = document.getElementById('change-b');
-                ca.textContent = (aChange > 0 ? '+' : '') + aChange;
-                ca.className = 'text-lg font-bold ' + (aChange > 0 ? 'text-green-400' : aChange < 0 ? 'text-red-400' : 'text-slate-400');
-                cb.textContent = (bChange > 0 ? '+' : '') + bChange;
-                cb.className = 'text-lg font-bold ' + (bChange > 0 ? 'text-green-400' : bChange < 0 ? 'text-red-400' : 'text-slate-400');
-                
-                btn.disabled = false;
-                btn.className = 'w-full py-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-bold text-lg active-scale shadow-lg shadow-cyan-500/25';
-            } else {
-                document.getElementById('result-box').classList.add('hidden');
-                btn.disabled = true;
-                btn.className = 'w-full py-4 rounded-xl bg-slate-700 text-slate-500 font-bold text-lg disabled:opacity-50';
+                alert('密码错误');
             }
         }
-
-        function resetMatchForm() {
-            currentGame = { g1: null, g2: null, g3: null };
-            document.getElementById('playerA').value = '';
-            document.getElementById('playerB').value = '';
-            document.getElementById('preview-a').textContent = '';
-            document.getElementById('preview-b').textContent = '';
-            document.getElementById('diff-box').classList.add('hidden');
-            document.getElementById('game3-box').classList.add('hidden');
-            document.getElementById('result-box').classList.add('hidden');
+        
+        function undoLastMatch() {
+            if (!data.matches.length) return alert('没有比赛可撤销');
             
-            ['g1', 'g2', 'g3'].forEach(g => {
-                document.getElementById(g + '-a').classList.remove('selected-winner', 'selected-loser');
-                document.getElementById(g + '-b').classList.remove('selected-winner', 'selected-loser');
+            const last = data.matches[0];
+            const winner = data.players.find(p => p.name === last.winner);
+            const loser = data.players.find(p => p.name === last.loser);
+            
+            if (winner) {
+                winner.score = last.winnerBefore;
+                winner.wins--;
+            }
+            if (loser) {
+                loser.score = last.loserBefore;
+                loser.losses--;
+            }
+            
+            data.matches.shift();
+            
+            syncToCloud().then(() => {
+                render();
+                closeModal();
+                alert('已撤销上一场比赛');
             });
-            
-            updateResult();
         }
-
-        function submitMatch() {
-            const aId = parseInt(document.getElementById('playerA').value);
-            const bId = parseInt(document.getElementById('playerB').value);
-            const a = players.find(p => p.id === aId);
-            const b = players.find(p => p.id === bId);
+        
+        function confirmClearAll() {
+            if (!confirm('⚠️ 确定清空所有数据？\n此操作不可恢复！')) return;
+            if (!confirm('再次确认：真的要清空所有球员和比赛记录吗？')) return;
             
-            let winsA = 0;
-            if (currentGame.g1 === 'A') winsA++;
-            if (currentGame.g2 === 'A') winsA++;
-            if (currentGame.g3 === 'A') winsA++;
-            const aWins = winsA >= 2;
+            data = { players: [], matches: [], lastUpdate: Date.now() };
             
-            const { aChange, bChange, diff } = calcPoints(a.rating, b.rating, aWins);
-            
-            const oldA = a.rating, oldB = b.rating;
-            a.rating += aChange;
-            b.rating += bChange;
-            a.matches++; b.matches++;
-            if (aWins) { a.wins++; b.losses++; } else { b.wins++; a.losses++; }
-            
-            const games = [currentGame.g1, currentGame.g2];
-            if (currentGame.g3) games.push(currentGame.g3);
-            
-            matches.unshift({
-                id: Date.now(),
-                date: new Date().toLocaleString('zh-CN'),
-                playerA: a.name,
-                playerB: b.name,
-                games: games,
-                score: aWins ? (currentGame.g3 ? '2:1' : '2:0') : (currentGame.g3 ? '1:2' : '0:2'),
-                winner: aWins ? a.name : b.name,
-                ratingChangeA: aChange,
-                ratingChangeB: bChange,
-                oldRatingA: oldA,
-                oldRatingB: oldB,
-                diff: diff
+            syncToCloud().then(() => {
+                render();
+                closeModal();
+                alert('所有数据已清空');
             });
-            
-            save();
-            closeRecordSheet();
-            renderAll();
-            
-            const upset = (!aWins && oldA < oldB) || (aWins && oldA > oldB);
-            const msg = (aWins ? a.name : b.name) + ' 获胜' + (upset && Math.abs(aChange) > 20 ? '（爆冷！）' : '');
-            showToast(msg);
         }
-
-        // Edit Match Functions
-        function openEditModal(matchId, index) {
-            const match = matches[index];
-            editingMatchId = matchId;
-            editingMatchIndex = index;
-            
-            document.getElementById('edit-match-info').innerHTML = `
-                <div class="flex justify-between mb-2">
-                    <span>${match.playerA}</span>
-                    <span class="font-bold">${match.score}</span>
-                    <span>${match.playerB}</span>
-                </div>
-                <div class="text-xs text-slate-500">
-                    原积分变化: ${match.playerA} ${match.ratingChangeA > 0 ? '+' : ''}${match.ratingChangeA} | 
-                    ${match.playerB} ${match.ratingChangeB > 0 ? '+' : ''}${match.ratingChangeB}
-                </div>
-            `;
-            
-            // Setup edit buttons
-            const a = players.find(p => p.name === match.playerA);
-            const b = players.find(p => p.name === match.playerB);
-            
-            document.getElementById('edit-buttons').innerHTML = `
-                <button onclick="setEditWinner(true)" id="edit-a-btn" class="py-3 px-4 rounded-xl border-2 ${match.winner === match.playerA ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'} font-medium">
-                    ${match.playerA} 胜
-                </button>
-                <button onclick="setEditWinner(false)" id="edit-b-btn" class="py-3 px-4 rounded-xl border-2 ${match.winner === match.playerB ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'} font-medium">
-                    ${match.playerB} 胜
-                </button>
-            `;
-            
-            // 默认选中当前胜者
-            const aWins = match.winner === match.playerA;
-            setEditWinner(aWins);
-            
-            document.getElementById('editBackdrop').classList.add('open');
-            document.getElementById('editSheet').classList.add('open');
+        
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
         }
-
-        function closeEditModal() {
-            document.getElementById('editBackdrop').classList.remove('open');
-            document.getElementById('editSheet').classList.remove('open');
-            editingMatchId = null;
-            editingMatchIndex = -1;
-        }
-
-        let editWinnerA = null;
-
-        function setEditWinner(aWins) {
-            editWinnerA = aWins;
-            document.getElementById('edit-a-btn').className = `py-3 px-4 rounded-xl border-2 font-medium ${aWins ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'}`;
-            document.getElementById('edit-b-btn').className = `py-3 px-4 rounded-xl border-2 font-medium ${!aWins ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'border-slate-600 text-slate-400'}`;
-        }
-
-        function saveEdit() {
-            if (editWinnerA === null) {
-                showToast('请选择新的比赛结果', 'error');
-                return;
-            }
-            
-            const match = matches[editingMatchIndex];
-            const a = players.find(p => p.name === match.playerA);
-            const b = players.find(p => p.name === match.playerB);
-            
-            // Revert old changes
-            a.rating -= match.ratingChangeA;
-            b.rating -= match.ratingChangeB;
-            a.matches--; b.matches--;
-            if (match.winner === match.playerA) { a.wins--; b.losses--; } else { b.wins--; a.losses--; }
-            
-            // Apply new result
-            const aWins = editWinnerA;
-            const { aChange, bChange } = calcPoints(a.rating, b.rating, aWins);
-            
-            a.rating += aChange;
-            b.rating += bChange;
-            a.matches++; b.matches++;
-            if (aWins) { a.wins++; b.losses++; } else { b.wins++; a.losses++; }
-            
-            // Update match record
-            match.winner = aWins ? match.playerA : match.playerB;
-            match.score = aWins ? '2:0' : '0:2'; // Simplified for edit
-            match.ratingChangeA = aChange;
-            match.ratingChangeB = bChange;
-            match.games = aWins ? ['A', 'A'] : ['B', 'B'];
-            
-            save();
-            renderAll();
-            closeEditModal();
-            showToast('比赛结果已修改');
-        }
-
-        function deleteMatch() {
-            if (!confirm('确定删除这场比赛记录吗？积分将回退到赛前状态。')) return;
-            
-            const match = matches[editingMatchIndex];
-            const a = players.find(p => p.name === match.playerA);
-            const b = players.find(p => p.name === match.playerB);
-            
-            // Revert changes
-            a.rating -= match.ratingChangeA;
-            b.rating -= match.ratingChangeB;
-            a.matches--; b.matches--;
-            if (match.winner === match.playerA) { a.wins--; b.losses--; } else { b.wins--; a.losses--; }
-            
-            // Remove match
-            matches.splice(editingMatchIndex, 1);
-            
-            save();
-            renderAll();
-            closeEditModal();
-            showToast('比赛记录已删除');
-        }
-
-        // Player Management
-        function addPlayer() {
-            const name = document.getElementById('newPlayerName').value.trim();
-            if (!name) return showToast('请输入姓名', 'error');
-            if (players.find(p => p.name === name)) return showToast('该选手已存在', 'error');
-            
-            players.push({
-                id: Date.now(),
-                name: name,
-                rating: INITIAL_RATING,
-                matches: 0,
-                wins: 0,
-                losses: 0
-            });
-            
-            save();
-            renderAll();
-            closeAddPlayer();
-            showToast('欢迎 ' + name + ' 加入！');
-        }
-
-        // Data & Utils
-        function save() {
-            localStorage.setItem('cjrc_players', JSON.stringify(players));
-            localStorage.setItem('cjrc_matches', JSON.stringify(matches));
-        }
-
-        function refreshData() {
-            renderAll();
-            showToast('数据已刷新');
-        }
-
-        function exportData() {
-            const data = { players, matches, exportTime: new Date().toISOString() };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `长江瑞城乒乓球赛_${new Date().toLocaleDateString()}.json`;
-            a.click();
-            showToast('数据已导出');
-        }
-
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').textContent = msg;
-            document.getElementById('toast-icon').textContent = type === 'success' ? '✓' : '✗';
-            toast.classList.remove('opacity-0');
-            setTimeout(() => toast.classList.add('opacity-0'), 2500);
-        }
+        
+        // ==================== 初始化 ====================
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal').forEach(m => {
+            m.onclick = (e) => { if (e.target === m) closeModal(); };
+        });
+        
+        // 启动
+        loadLocal();
+        syncFromCloud();
+        
+        // 每30秒自动同步
+        setInterval(syncFromCloud, 30000);
+        
+        // 页面可见时同步
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) syncFromCloud();
+        });
     </script>
 </body>
 </html>
